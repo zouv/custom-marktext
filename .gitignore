@@ -18,6 +18,11 @@ playwright-report/
 .playwright-mcp/
 *.min.json
 .claude/settings.local.json
-.claude/
-.agents/
+# [CUSTOM-BEGIN] CUSTOM-20260904-001 - track AI agent tooling, ignore session-local files
+# upstream ignores .agents/ and .claude/ wholesale; we track .agents/ (cross-tool
+# skill standard path) and .claude/settings.local.json only, and ignore .zcode/plans/
+# [CUSTOM-END] CUSTOM-20260904-001
+!.agents/
+!.agents/**
+.zcode/plans/
 .agent/
