@@ -1,10 +1,10 @@
 ---
 current_upstream_version: 'develop@1d3025b2'
 current_upstream_commit: '1d3025b2b6306613a6fa0f822ba9bcaf8890b094'
-custom_version: ''
+custom_version: 'v0.20.0-custom.1'
 last_merge_date: '2026-09-04'
-last_release_version: ''
-last_release_date: ''
+last_release_version: 'v0.20.0-custom.1'
+last_release_date: '2026-09-04'
 vendor_branch: 'vendor/develop'
 upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
@@ -69,6 +69,18 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
 
 ## 变更日志
+
+### 2026-09-04 - CUSTOM-20260904-006（发布 v0.20.0-custom.1）
+
+- **功能**：发布 v0.20.0-custom.1（首个自定义版本，GitHub Release 预发布）
+- **改动文件**：packages/desktop/package.json（version 0.20.0-dev → 0.20.0-custom.1）、CUSTOMIZATIONS/registry.md（frontmatter）、CUSTOMIZATIONS/release-notes/v0.20.0-custom.1.md（新增）
+- **详细说明**：
+  - 基线 develop@1d3025b2（上游 0.20.0 开发线，非正式 tag）→ 按规范标记 prerelease
+  - 产物：marktext-win-x64-0.20.0-custom.1-setup.exe（NSIS 120MB）+ .zip（165MB）+ blockmap；asar 已验证含 005 修复（8 处 CUSTOM-20260904-005 标记）
+  - gh CLI 本机不可用 → 用 git credential 的 token 走 GitHub REST API 创建 Release 并上传产物
+  - 顺带登记：提交规则调整（AGENTS.md 禁止未经用户指示 commit/push；record-change 第六步改为汇报不自动提交；merge/release skill 加流程内提交的约束说明）——8143487a
+- **验证方式**：产物 asar 标记检查通过；Release 创建后 API 校验资产列表与大小
+- **基于上游版本**：develop@1d3025b2
 
 ### 2026-09-04 - CUSTOM-20260904-005
 
