@@ -45,16 +45,17 @@ pnpm -C packages/muya test:spec     # CommonMark/GFM 规范基线
 
 ## Git 分支规则
 
-| 分支 | 用途 | 谁可以写入 |
-|------|------|-----------|
-| `upstream/develop` | 跟踪上游 marktext/marktext（PR 合入 develop） | 只读（仅 fetch） |
-| `vendor/develop` | 上游版本基线（当前线） | 只读（仅 merge-upstream skill 可更新） |
-| `vendor/vX.Y.x` | 上游版本线分支（锚定 tag 时用） | 只读（同上） |
-| `custom/main` | 自定义开发主分支 | AI Agent 开发合并 |
-| `feature/<name>` | 功能开发分支 | AI Agent 临时分支 |
+| 分支               | 用途                                          | 谁可以写入                             |
+| ------------------ | --------------------------------------------- | -------------------------------------- |
+| `upstream/develop` | 跟踪上游 marktext/marktext（PR 合入 develop） | 只读（仅 fetch）                       |
+| `vendor/develop`   | 上游版本基线（当前线）                        | 只读（仅 merge-upstream skill 可更新） |
+| `vendor/vX.Y.x`    | 上游版本线分支（锚定 tag 时用）               | 只读（同上）                           |
+| `custom/main`      | 自定义开发主分支                              | AI Agent 开发合并                      |
+| `feature/<name>`   | 功能开发分支                                  | AI Agent 临时分支                      |
 
 - **remote**：`origin` → https://github.com/zouv/custom-marktext；`upstream` → https://github.com/marktext/marktext
 - **禁止操作**：
+  - **禁止未经用户明确指示 commit / push**：完成改动后只汇报结果（改了什么、验证情况），由用户决定何时提交；用户明确说"提交"/"commit"/"push"时才执行
   - 禁止手动 `git merge` 合并 vendor 到 custom/main（必须通过 `marktext-merge-upstream` skill）
   - 禁止 `git rebase` 改写 custom/main 的历史
   - 禁止直接 push 到 vendor 分支
@@ -77,11 +78,11 @@ pnpm -C packages/muya test:spec     # CommonMark/GFM 规范基线
 
 Skill 定义位于 `.agents/skills/`（跨工具共享的工作区级标准路径；上游 `.gitignore` 忽略该目录，本仓库已反向豁免，见 pitfalls #1）。
 
-| Skill | 何时调用 |
-|-------|---------|
-| `marktext-record-change` | 完成任何自定义功能/修改后 |
-| `marktext-merge-upstream` | 用户要求合并上游/升级版本/同步原仓库时 |
-| `marktext-release` | 用户要求打包/发布/打 release/生成安装包时 |
+| Skill                     | 何时调用                                  |
+| ------------------------- | ----------------------------------------- |
+| `marktext-record-change`  | 完成任何自定义功能/修改后                 |
+| `marktext-merge-upstream` | 用户要求合并上游/升级版本/同步原仓库时    |
+| `marktext-release`        | 用户要求打包/发布/打 release/生成安装包时 |
 
 详细触发场景见各 skill 的 `.agents/skills/<name>/SKILL.md`。
 
@@ -107,12 +108,12 @@ CLAUDE.md                   # 上游维护的架构文档（勿改）
 
 ## 文档更新职责（改完代码必须同步）
 
-| 改动类型 | 更新哪里 |
-|---------|---------|
-| 任何自定义功能/修改 | `CUSTOMIZATIONS/registry.md`（record-change skill） |
-| 新增/移动函数、改数据流或接口 | `CUSTOMIZATIONS/architecture.md`（§1 职责表 / §2 反查表 / §3 链路） |
-| 解决了一个反复折腾才定位的问题 | `CUSTOMIZATIONS/docs/pitfalls.md`（现象→根因→解法→教训） |
-| 机制/规则变更 | `CUSTOMIZATIONS/README.md` |
+| 改动类型                       | 更新哪里                                                            |
+| ------------------------------ | ------------------------------------------------------------------- |
+| 任何自定义功能/修改            | `CUSTOMIZATIONS/registry.md`（record-change skill）                 |
+| 新增/移动函数、改数据流或接口  | `CUSTOMIZATIONS/architecture.md`（§1 职责表 / §2 反查表 / §3 链路） |
+| 解决了一个反复折腾才定位的问题 | `CUSTOMIZATIONS/docs/pitfalls.md`（现象→根因→解法→教训）            |
+| 机制/规则变更                  | `CUSTOMIZATIONS/README.md`                                          |
 
 ## 代码风格
 

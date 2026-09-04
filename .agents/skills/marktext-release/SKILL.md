@@ -1,6 +1,6 @@
 ---
-name: "marktext-release"
-description: "Build and publish a release of the custom marktext build to GitHub. Invoke when user asks to build, package, publish, release, or create a new version/tag of the custom marktext."
+name: 'marktext-release'
+description: 'Build and publish a release of the custom marktext build to GitHub. Invoke when user asks to build, package, publish, release, or create a new version/tag of the custom marktext.'
 ---
 
 # MarkText 自定义版本发布 Skill
@@ -84,16 +84,21 @@ Release Notes 落盘 `CUSTOMIZATIONS/release-notes/<custom-version>.md`（随仓
 基于上游 marktext <upstream-ref> 的自定义版本。
 
 ### 自定义改动
+
 <按 registry.md 总览 active 条目生成>
+
 - **<change-id>**: <描述>
 
 ### 已知问题
+
 <如有>
 
 ### 下载
+
 - Windows: <安装包文件名>
 
 ---
+
 **完整自定义改动清单**：见 CUSTOMIZATIONS/registry.md
 **上游版本**：marktext/marktext@<upstream-ref>
 ```
@@ -174,3 +179,4 @@ v<上游版本>-custom.<N>
 5. **不手改 pnpm-lock.yaml**
 6. **版本号只改 `packages/desktop/package.json`**（根 monorepo 版本不动；electron-builder 只认 desktop 包）
 7. **发布失败回滚**：tag 已建但 release 上传失败 → `git tag -d <v> && git push origin :refs/tags/<v>` 后重试；release 已发的严重问题 → 标 deprecated 发新版本，不删已有 release
+8. **发布由用户明确发起**：本 skill 的 commit/tag/push 属于发布流程的固有步骤，用户要求发布时按步骤执行；流程中止（检查失败、产物异常）时停在未提交状态先报告

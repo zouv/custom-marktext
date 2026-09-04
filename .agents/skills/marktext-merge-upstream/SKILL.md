@@ -1,6 +1,6 @@
 ---
-name: "marktext-merge-upstream"
-description: "Merge upstream marktext/marktext updates into custom repository. Invoke when user asks to sync/merge/update from upstream, upgrade to a new version, or pull upstream changes."
+name: 'marktext-merge-upstream'
+description: 'Merge upstream marktext/marktext updates into custom repository. Invoke when user asks to sync/merge/update from upstream, upgrade to a new version, or pull upstream changes.'
 ---
 
 # MarkText 上游合并 Skill
@@ -109,12 +109,14 @@ git diff --name-only --diff-filter=U    # 列出冲突文件
 对每个冲突文件，按 `CUSTOMIZATIONS/README.md` 优先级表处理：
 
 **阶段 1（自动解析）**：
+
 - registry.md 总览条目标 `keep-ours` → `git checkout --ours <file> && git add <file>`
 - 标 `keep-theirs` → `git checkout --theirs <file> && git add <file>`
 - `CUSTOMIZATIONS/`、`.agents/`、`AGENTS.md` 下的纯自定义文件 → 必然 keep-ours
 - 其余（含 `[CUSTOM-BEGIN]` 标记的上游文件）→ 阶段 2
 
 **阶段 2（智能手动合并）**：
+
 1. 读取冲突文件完整内容
 2. `[CUSTOM-BEGIN]...[CUSTOM-END]` 块必须保留；标记外区域优先采用上游版本
 3. 上游重构导致标记位置漂移时，按函数/组件名找新位置重放标记块
@@ -122,6 +124,7 @@ git diff --name-only --diff-filter=U    # 列出冲突文件
 5. `pnpm-lock.yaml` 冲突：接受上游版本 → 删 `node_modules` → `pnpm install` 重新生成，**不要手编 lock**
 
 **阶段 3（无法自动处理 → 暂停并向用户报告）**：
+
 - 上游完全重构了被大量自定义修改的模块（标记找不到落点）
 - `package.json` / `pnpm-workspace.yaml` 复杂依赖冲突
 - `CUSTOMIZATIONS/registry.md` 自身冲突（人工决策）
@@ -193,8 +196,9 @@ git push origin custom/main --force-with-lease
 ## 重要约束
 
 1. **永远不要在 custom/main 上直接 merge**：必须经临时 `merge/upstream-*` 分支
-2. **永远不要用 rebase 处理上游合并**：会改写自定义历史，破坏 registry.md 追踪
+2. **永远不要用 rebase 处理上游合并**：会改写自定义历史，破坏 CUSTOMIZATIONS/registry.md 的追踪
 3. **vendor 分支上不做任何自定义修改**：只接受来自 upstream 的 merge
 4. **pnpm-lock.yaml 冲突**：接受上游后重新 `pnpm install`，不手编
-5. **不删除 registry.md 任何历史条目**：跨版本升级时需要参考全部历史
+5. **不删除 CUSTOMIZATIONS/registry.md 中的任何历史条目**：跨版本升级时需要参考所有历史改动
 6. 上游 `.gitignore` 忽略 `.agents/`（见 pitfalls #1）：合并时 `.gitignore` 冲突按 keep-ours 处理，防豁免规则被冲掉
+7. **本 skill 各步骤中的 commit / push 仅在用户明确发起合并请求时执行**——合并流程本身就是用户触发的操作，流程内按步骤提交推送是预期行为；但流程中止（冲突需要人工决策、验证失败）时停在未提交状态，先报告再等指示

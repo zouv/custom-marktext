@@ -1,6 +1,6 @@
 ---
-name: "marktext-record-change"
-description: "记录自定义改动到 CUSTOMIZATIONS/registry.md。Invoke when AI agent completes a custom feature, bugfix, or any modification to upstream code, to register the change for future merge tracking."
+name: 'marktext-record-change'
+description: '记录自定义改动到 CUSTOMIZATIONS/registry.md。Invoke when AI agent completes a custom feature, bugfix, or any modification to upstream code, to register the change for future merge tracking.'
 ---
 
 # MarkText 自定义改动记录 Skill
@@ -17,10 +17,10 @@ description: "记录自定义改动到 CUSTOMIZATIONS/registry.md。Invoke when 
 
 ## registry.md 的两层结构（先理解再写）
 
-| 层 | 组织方式 | 回答什么问题 | 更新方式 |
-|---|---|---|---|
+| 层                     | 组织方式                             | 回答什么问题                                 | 更新方式                                                                |
+| ---------------------- | ------------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------- |
 | **改动总览**（按文件） | 每个文件一节，多轮演进合并为当前状态 | "这个文件现在改了什么？合并上游时怎么处理？" | **该文件已有条目就更新那一节**（合并描述、演进链追加新 id）；没有才新增 |
-| **变更日志**（按次） | 按时间倒序 append-only | "这次改动何时发生、为什么、怎么验证？" | 只在顶部追加新条目，**永不改写历史** |
+| **变更日志**（按次）   | 按时间倒序 append-only               | "这次改动何时发生、为什么、怎么验证？"       | 只在顶部追加新条目，**永不改写历史**                                    |
 
 关键原则：**同一文件多轮修改 → 总览里仍是一节**（演进链 `002→004→006` 标注历轮 id），变更日志按轮次各留一条。总览与代码中 `[CUSTOM-BEGIN]` 标记一一对应，是"当前状态"的文档镜像。
 
@@ -54,6 +54,7 @@ git ls-files --others --exclude-standard
 `<change-id>` 格式 `CUSTOM-YYYYMMDD-NNN`。已有标记块内追加修改时复用原 id；**同文件的新逻辑改动区域用新 id 新开标记块**（演进由总览的演进链体现）。
 
 语法适配：
+
 - `.vue` 文件：`<script>` 内用 `//`，`<template>` 内用 `<!-- [CUSTOM-BEGIN] ... -->`
 - `.json` / `.yaml`（如 preferences schema.json、locales）：无法注释，总览「标记」列注明「无标记（json 无法注释）」
 - `packages/muya/` 下改动同样适用（muya 有自己的 ESLint 规则，注释风格照常）
@@ -69,6 +70,7 @@ git ls-files --others --exclude-standard
 
 ```markdown
 ### <日期> - <change-id>
+
 - **功能**：<一句话>
 - **改动文件**：<列表>
 - **详细说明**：<改了什么、为什么、注意事项>
@@ -84,7 +86,11 @@ sh CUSTOMIZATIONS/scripts/check-registry.sh
 
 脚本双向比对代码 `[CUSTOM-BEGIN]` 标记 ↔ 总览表。退出码非 0 时按提示修复（通常是忘了补标记或总览路径写法不匹配），**修到全绿才算登记完成**。
 
-### 第六步：提交
+### 第六步：汇报（不自动提交）
+
+登记完成后**停止并汇报**：改动、验证结果、check-registry 状态、建议的提交命令。**不要主动执行 git commit / git push**——提交时机由用户决定（见根 AGENTS.md 禁止操作第一条）。
+
+用户明确要求提交时，提交命令参考：
 
 ```bash
 git add CUSTOMIZATIONS/registry.md <被标记的修改文件>
@@ -104,6 +110,7 @@ git commit -m "docs(custom): record change <change-id> - <简要描述>"
 ## 输出要求
 
 向用户报告：
+
 - 本轮 change-id、涉及的文件
 - 总览更新了哪些既有节 / 新增了哪些节（体现"合并而非堆叠"）
 - check-registry.sh 校验结果（全绿）
