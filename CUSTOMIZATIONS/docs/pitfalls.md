@@ -54,3 +54,17 @@
 - **解法**：`npx electron-builder build --publish never --win --x64 --projectDir packages\desktop`（配置文件 packages/desktop/electron-builder.yml 随 projectDir 解析，产物按其 `directories.output: ../../dist` 落到仓库根 dist/）。
 - **教训**：从单包项目移植打包脚本到 monorepo 时，跨目录调用 builder 用 `--projectDir`；产物名/输出目录以目标包的 electron-builder.yml 为准（本仓库为 `marktext-win-${arch}-${version}-setup.exe`，不是默认 `${productName}-Setup.exe`）。
 - **验证**：`build-setup.bat --skip-build` 全流程成功，dist/ 生成 setup.exe + zip + blockmap。
+
+## 6. 保真回放的边界值：0 空行边界与文档尾部空行
+
+- **日期**：2026-09-04（CUSTOM-20260904-005，用户实测反馈暴露）
+- **现象**：只改一行的 CRLF 文档保存后出现 7 处空行插入 + 尾部空行丢失（用户 diff 显示多行变更）。
+- **根因**：
+  1. 回放拼接的块间空行数做了 `Math.max(blanks ?? 1, 1)`——0（块紧贴，如 `### 标题` 后直接跟段落）被强制成 1，凭空插空行；
+  2. 文档尾部空行是"块后"信息，marked space token 在最后一个块之后无块可挂载，解析时静默丢弃，序列化固定输出单 `
+`。
+- **解法**：gap 钳位下限改 0；解析器统计源文本尾部换行数（`getTrailingBlankLines`）→ JSONState 存 → 序列化器 `setTrailingBlankLines` 回放。
+- **教训**：
+  - 边界值（0、空、尾部）在"记录→回放"机制里最易被默认值吃掉——设计回放 API 时显式区分"未记录（默认 1）"与"记录为 0"；
+  - **复现测试必须用原始结构文件**：上一轮验证用了已被上游归一化破坏过一次的文件（标准 1 空行结构），0 空行边界 bug 被掩盖、误判为"用户测旧包"。用户的"修改前备份"才是正确夹具。
+- **验证**：preserveZeroGap.spec.ts 7 用例 + 副本真实文件 muya 实例恒等 + 新包 CDP 端到端落盘只变一行。

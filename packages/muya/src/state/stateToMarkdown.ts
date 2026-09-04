@@ -119,9 +119,38 @@ export default class ExportMarkdown {
         }
     }
 
+    // [CUSTOM-BEGIN] CUSTOM-20260904-005
+    // Verbatim trailing blank lines of the document as recorded by the
+    // parser (set via setTrailingBlankLines). Undefined = unknown / feature
+    // off → keep the single trailing `\n` convention.
+    private _trailingBlankLines: number | undefined;
+    // [CUSTOM-END] CUSTOM-20260904-005
+
     generate(states: TState[]) {
-        return this._convertStatesToMarkdown(states);
+        // [CUSTOM-BEGIN] CUSTOM-20260904-005 - replay the document's verbatim
+        // trailing blank lines (e.g. a trailing empty line in the source)
+        // instead of always collapsing to a single `\n`. Only honoured in
+        // preserveFormatting mode where the parser recorded the value.
+        const out = this._convertStatesToMarkdown(states);
+        if (this._preserveFormatting && this._trailingBlankLines !== undefined) {
+            const target = '\n'.repeat(this._trailingBlankLines + 1);
+            const trimmed = out.replace(/\n+$/, '');
+            return `${trimmed}${target}`;
+        }
+        // [CUSTOM-END] CUSTOM-20260904-005
+        return out;
     }
+
+    // [CUSTOM-BEGIN] CUSTOM-20260904-005
+    /**
+     * Record the document's trailing blank-line count (the raw source's
+     * final newline run after the last block, minus its terminating `\n`).
+     * Called by JSONState.getMarkdownFromState from the parser's anchors.
+     */
+    setTrailingBlankLines(count: number): void {
+        this._trailingBlankLines = count;
+    }
+    // [CUSTOM-END] CUSTOM-20260904-005
 
     // [CUSTOM-BEGIN] CUSTOM-20260904-004
     /**
@@ -241,7 +270,13 @@ export default class ExportMarkdown {
                         result.push(`${raw}\n`);
                     }
                     else {
-                        const gap = Math.max(blanks ?? 1, 1);
+                        // [CUSTOM-BEGIN] CUSTOM-20260904-005 - honour the exact
+                        // recorded gap, including 0 (blocks glued together, e.g.
+                        // a paragraph or list directly after a `###` heading).
+                        // Clamping to >= 1 re-inserted a blank line the source
+                        // never had (reported on AGENTS.md).
+                        // [CUSTOM-END] CUSTOM-20260904-005
+                        const gap = Math.max(blanks ?? 1, 0);
                         result.push(`${'\n'.repeat(gap)}${raw}\n`);
                     }
                     previousState = state;

@@ -52,6 +52,11 @@ class JSONState {
 
     private _state: TState[] = [];
 
+    // [CUSTOM-BEGIN] CUSTOM-20260904-005 - trailing blank lines of the last
+    // parsed markdown source; replayed verbatim by getMarkdownFromState.
+    private _trailingBlankLines: number | undefined;
+    // [CUSTOM-END] CUSTOM-20260904-005
+
     constructor(private _muya: Muya, stateOrMarkdown: TState[] | string) {
         this.setContent(stateOrMarkdown);
     }
@@ -105,7 +110,7 @@ class JSONState {
             // [CUSTOM-END] CUSTOM-20260904-004
         } = this._muya.options;
 
-        return new MarkdownToState({
+        const parser = new MarkdownToState({
             footnote,
             isGitlabCompatibilityEnabled,
             trimUnnecessaryCodeBlockEmptyLines,
@@ -114,7 +119,14 @@ class JSONState {
             // [CUSTOM-BEGIN] CUSTOM-20260904-004
             preserveFormatting: preserveFormattingOnSave === true,
             // [CUSTOM-END] CUSTOM-20260904-004
-        }).generate(markdown);
+        });
+        const states = parser.generate(markdown);
+        // [CUSTOM-BEGIN] CUSTOM-20260904-005 - remember the source's trailing
+        // blank lines so getMarkdownFromState can replay them verbatim.
+        if (preserveFormattingOnSave === true)
+            this._trailingBlankLines = parser.getTrailingBlankLines();
+        // [CUSTOM-END] CUSTOM-20260904-005
+        return states;
     }
 
     /**
@@ -262,6 +274,11 @@ class JSONState {
                 frontMatter,
                 math,
             });
+            // [CUSTOM-BEGIN] CUSTOM-20260904-005 - replay the recorded
+            // trailing blank lines of the parsed source.
+            if (this._trailingBlankLines !== undefined)
+                mdGenerator.setTrailingBlankLines(this._trailingBlankLines);
+            // [CUSTOM-END] CUSTOM-20260904-005
         }
         // [CUSTOM-END] CUSTOM-20260904-004
 

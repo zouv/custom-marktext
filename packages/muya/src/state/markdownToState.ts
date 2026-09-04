@@ -152,8 +152,24 @@ export class MarkdownToState {
             seenFirst = true;
             stateIndex++;
         }
+
+        // [CUSTOM-BEGIN] CUSTOM-20260904-005 - record the document's trailing
+        // blank-line run (after the last block) so the serializer can replay
+        // it verbatim. `markdown` ends with `\n`; every additional `\n` beyond
+        // the first is one trailing blank line.
+        const trailingNewlines = markdown.length - markdown.replace(/\n+$/, '').length;
+        this._trailingBlankLines = Math.max(trailingNewlines - 1, 0);
+        // [CUSTOM-END] CUSTOM-20260904-005
     }
-    // [CUSTOM-END] CUSTOM-20260904-004
+
+    // [CUSTOM-BEGIN] CUSTOM-20260904-005
+    /** Trailing blank lines of the last parsed source; read by JSONState. */
+    getTrailingBlankLines(): number | undefined {
+        return this._trailingBlankLines;
+    }
+
+    private _trailingBlankLines: number | undefined;
+    // [CUSTOM-END] CUSTOM-20260904-005
 
     private _handleContainerToken(
         token: TBlockToken,

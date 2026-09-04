@@ -46,7 +46,7 @@ describe('preserveFormatting — live editor integration', () => {
         // Simulate the user edit through the REAL path: the content block's
         // text setter dispatches a jsonState.editOperation op (exactly what
         // typing in the editor does).
-        const headingBlock = muya.editor.scrollPage!.firstContentInDescendant();
+        const headingBlock = muya.editor.scrollPage!.firstContentInDescendant()!;
         headingBlock.text = '## 重 要';
         muya.editor.jsonState.flush();
 
