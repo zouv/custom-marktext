@@ -35,6 +35,12 @@ export interface IMuyaOptions {
     isGitlabCompatibilityEnabled: boolean;
     autoMoveCheckedToEnd: boolean;
     disableHtml: boolean;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004 - preserve original formatting of unchanged blocks on save
+    // Off (default) = upstream behaviour: every save re-serializes the whole
+    // document through the normalizer. On = blocks whose parsed state still
+    // matches their recorded original source are replayed verbatim.
+    preserveFormattingOnSave?: boolean;
+    // [CUSTOM-END] CUSTOM-20260904-004
     locale: {
         name: string;
         resource: {

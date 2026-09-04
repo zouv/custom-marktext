@@ -1,6 +1,25 @@
+// [CUSTOM-BEGIN] CUSTOM-20260904-004 - raw source anchoring for round-trip fidelity
+// When `preserveFormatting` is on, `markdownToState` stashes each block's
+// original source on this optional field. ot-json1 edit ops only touch
+// `text`/subfields at a block path, so untouched blocks keep their `raw`
+// intact; the serializer replays it (after a re-parse consistency check) so
+// unchanged lines survive a save byte-for-byte. Optional on every block state,
+// so consumers that deep-clone / compare states are unaffected when absent.
+// [CUSTOM-END] CUSTOM-20260904-004
+export interface IRawSourceAnchor {
+    /** Verbatim source text of this block, inter-block blank lines excluded. */
+    raw?: string;
+    /** Blank-line run that preceded this block (0 = directly adjacent, 1 = default). */
+    leadingBlankLines?: number;
+}
+
 export interface IParagraphState {
     name: 'paragraph';
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IAtxHeadingState {
@@ -9,6 +28,10 @@ export interface IAtxHeadingState {
         level: number;
     };
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface ISetextHeadingState {
@@ -18,11 +41,19 @@ export interface ISetextHeadingState {
         underline: string; // "===" | "---";
     };
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IThematicBreakState {
     name: 'thematic-break';
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface ICodeBlockState {
@@ -36,11 +67,19 @@ export interface ICodeBlockState {
         fenceLength?: number;
     };
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IHtmlBlockState {
     name: 'html-block';
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 /**
@@ -59,6 +98,10 @@ export interface ILinkReferenceDefinitionState {
 export interface IBlockQuoteState {
     name: 'block-quote';
     children: TState[];
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IListItemState {
@@ -74,6 +117,10 @@ export interface IOrderListState {
         delimiter: string; // "." | ")";
     };
     children: IListItemState[];
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IBulletListState {
@@ -83,6 +130,10 @@ export interface IBulletListState {
         loose: boolean;
     };
     children: IListItemState[];
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface ITableRowState {
@@ -103,6 +154,10 @@ export interface ITableCellState {
 export interface ITableState {
     name: 'table';
     children: ITableRowState[];
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface ITaskListItemMeta {
@@ -134,6 +189,10 @@ export interface IMathBlockState {
     name: 'math-block';
     meta: IMathMeta;
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IFrontmatterMeta {
@@ -156,6 +215,10 @@ export interface IDiagramState {
     name: 'diagram';
     meta: IDiagramMeta;
     text: string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    raw?: string;
+    leadingBlankLines?: number;
+    // [CUSTOM-END] CUSTOM-20260904-004
 }
 
 export interface IFootnoteBlockMeta {

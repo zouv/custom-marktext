@@ -351,6 +351,9 @@ export const MUYA_DEFAULT_OPTIONS = {
     autoMoveCheckedToEnd: false,
     // Whether HTML rendering is disabled or not.
     disableHtml: false,
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    preserveFormattingOnSave: false,
+    // [CUSTOM-END] CUSTOM-20260904-004
     locale: en,
 };
 
