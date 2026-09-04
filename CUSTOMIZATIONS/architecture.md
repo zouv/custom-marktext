@@ -116,12 +116,13 @@ packages/muya/src/
 
 ### 2.4 Markdown 语法/渲染
 
-| 我要改的东西   | 关键锚点                                                         | 备注                                        |
-| -------------- | ---------------------------------------------------------------- | ------------------------------------------- |
-| md → 状态树    | `muya/src/state/markdownToState.ts`                              | 引用式定义走 paragraph 原样回放（非一等块） |
-| 状态树 → md    | `muya/src/state/stateToMarkdown.ts`                              |                                             |
-| 行内渲染/高亮  | `muya/src/inlineRenderer/{lexer,rules}` + snabbdom               | KaTeX/Prism/Mermaid 集成于此                |
-| 公共规范符合度 | `muya/test/spec/`（expected-failures.json 锁基线，只能升不能降） | 改渲染跑 `pnpm -C packages/muya test:spec`  |
+| 我要改的东西   | 关键锚点                                                                                                  | 备注                                                                                                                            |
+| -------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| md → 状态树    | `muya/src/state/markdownToState.ts`                                                                       | 引用式定义走 paragraph 原样回放（非一等块）                                                                                     |
+| 状态树 → md    | `muya/src/state/stateToMarkdown.ts`                                                                       |                                                                                                                                 |
+| 保存格式保真   | markdownToState `_anchorRawSource`（记录 raw 锚点）→ stateToMarkdown `_rawMatchesState`（一致性校验回放） | CUSTOM-20260904-004；开关 `preserveFormattingOnSave`（muya options ↔ 偏好 Markdown 分区），编辑 op 只触达目标块、未改块锚点保留 |
+| 行内渲染/高亮  | `muya/src/inlineRenderer/{lexer,rules}` + snabbdom                                                        | KaTeX/Prism/Mermaid 集成于此                                                                                                    |
+| 公共规范符合度 | `muya/test/spec/`（expected-failures.json 锁基线，只能升不能降）                                          | 改渲染跑 `pnpm -C packages/muya test:spec`                                                                                      |
 
 ### 2.5 文件与标签页
 

@@ -672,6 +672,7 @@
         },
         "orderListDelimiter": "有序列表分隔符",
         "preferLooseListItem": "首选宽松列表项",
+        "preserveFormattingOnSave": "保存时保留未修改行的原始格式",
         "title": "列表"
       }
     },

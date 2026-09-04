@@ -22,6 +22,13 @@ interface IMarkdownToStateOptions {
     isGitlabCompatibilityEnabled: boolean;
     trimUnnecessaryCodeBlockEmptyLines: boolean;
     frontMatter: boolean;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004 - record raw source on block states
+    // When true, each top-level block state gets `raw` (its verbatim source,
+    // trailing blank lines stripped) and `leadingBlankLines` (blank-line run
+    // before the block) so the serializer can replay untouched blocks
+    // byte-for-byte. Defaults to false (upstream behaviour unchanged).
+    // [CUSTOM-END] CUSTOM-20260904-004
+    preserveFormatting?: boolean;
 };
 
 const DEFAULT_OPTIONS = {
@@ -81,8 +88,72 @@ export class MarkdownToState {
                 this._handleLeafToken(token, parentList, tokens, trimUnnecessaryCodeBlockEmptyLines);
         }
 
+        // [CUSTOM-BEGIN] CUSTOM-20260904-004 - anchor raw source on top-level states
+        // Post-pass instead of touching every leaf case: the lexer output and
+        // `states` share the same top-level order, so we can zip the ORIGINAL
+        // lexed tokens (before the while loop consumed/shifted them — we lex a
+        // second time for the anchor data only) onto the top-level block states.
+        // Only top-level blocks are anchored; nested blocks are covered by
+        // replaying their whole top-level ancestor.
+        if (this._options.preserveFormatting) {
+            this._anchorRawSource(markdown, states, {
+                footnote,
+                math,
+                frontMatter,
+                isGitlabCompatibilityEnabled,
+            });
+        }
+        // [CUSTOM-END] CUSTOM-20260904-004
+
         return states.length ? states : [{ name: 'paragraph', text: '' }];
     }
+
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    // Zip `raw` + `leadingBlankLines` onto the top-level block states by
+    // re-lexing the source. The lexer token stream maps 1:1 onto top-level
+    // states (container tokens produce one state each; `space` tokens produce
+    // none), so a cursor walk is enough. `raw` is the token's verbatim source
+    // with the trailing blank-line run stripped (that run belongs to the NEXT
+    // block's `leadingBlankLines`); the very first block records the document's
+    // leading blank lines as-is (normally 0).
+    private _anchorRawSource(
+        markdown: string,
+        states: TState[],
+        lexOptions: { footnote: boolean; math: boolean; frontMatter: boolean; isGitlabCompatibilityEnabled: boolean },
+    ): void {
+        const tokens = lexBlock(markdown, lexOptions);
+        let stateIndex = 0;
+        let pendingBlanks = 0;
+        let seenFirst = false;
+
+        for (const token of tokens) {
+            if (token.type === 'space') {
+                // Count the blank-line run carried by this space token. A
+                // `space` raw like "\n\n\n" separates blocks with (lines-1)
+                // blank lines.
+                const newlines = (token.raw.match(/\n/g) || []).length;
+                pendingBlanks = Math.max(pendingBlanks, newlines - 1);
+                continue;
+            }
+
+            const state = states[stateIndex];
+            if (!state)
+                break;
+
+            // The blank lines BEFORE the very first block are structural
+            // (leading blank lines of the document); keep them in the first
+            // block's leadingBlankLines so the serializer can replay them.
+            const raw = token.raw.replace(/\n+$/, '');
+            const blanksBefore = seenFirst ? pendingBlanks : pendingBlanks;
+            const anchorable = state as { raw?: string; leadingBlankLines?: number };
+            anchorable.raw = raw;
+            anchorable.leadingBlankLines = blanksBefore;
+            pendingBlanks = 0;
+            seenFirst = true;
+            stateIndex++;
+        }
+    }
+    // [CUSTOM-END] CUSTOM-20260904-004
 
     private _handleContainerToken(
         token: TBlockToken,

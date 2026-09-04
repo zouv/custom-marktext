@@ -34,6 +34,13 @@
           :options="getListIndentationOptions()"
           :on-change="(value) => onSelectChange('listIndentation', value)"
         />
+        <!-- [CUSTOM-BEGIN] CUSTOM-20260904-004 -->
+        <bool
+          :description="t('preferences.markdown.lists.preserveFormattingOnSave')"
+          :bool="preserveFormattingOnSave"
+          :on-change="(value) => onSelectChange('preserveFormattingOnSave', value)"
+        />
+        <!-- [CUSTOM-END] CUSTOM-20260904-004 -->
       </template>
     </compound>
 
@@ -152,6 +159,9 @@ const preferenceStore = usePreferencesStore()
 
 const {
   preferLooseListItem,
+  // [CUSTOM-BEGIN] CUSTOM-20260904-004
+  preserveFormattingOnSave,
+  // [CUSTOM-END] CUSTOM-20260904-004
   bulletListMarker,
   orderListDelimiter,
   preferHeadingStyle,

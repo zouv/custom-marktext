@@ -33,6 +33,9 @@ import { deepClone } from '../utils';
 
 import logger from '../utils/logger';
 import stringWidth from '../utils/stringWidth';
+// [CUSTOM-BEGIN] CUSTOM-20260904-004 - raw replay consistency check re-parses anchored sources
+import { MarkdownToState } from './markdownToState';
+// [CUSTOM-END] CUSTOM-20260904-004
 import { isAnyListState } from './types';
 
 const debug = logger('export markdown: ');
@@ -44,6 +47,13 @@ function escapeText(str: string) {
 
 export interface IExportMarkdownOptions {
     listIndentation: number | string;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004 - replay anchored raw source
+    // When true, top-level blocks carrying an untampered `raw` anchor (set by
+    // markdownToState under preserveFormatting) are re-parsed and compared;
+    // on exact match the verbatim source is emitted instead of the normalized
+    // serialization. Default false keeps upstream behaviour byte-for-byte.
+    // [CUSTOM-END] CUSTOM-20260904-004
+    preserveFormatting?: boolean;
 }
 
 export default class ExportMarkdown {
@@ -60,10 +70,27 @@ export default class ExportMarkdown {
     private _isLooseParentList: boolean;
     private _listIndentation: string;
     private _listIndentationCount: number;
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    private _preserveFormatting: boolean;
+    // Re-parsed state cache keyed by raw text: one MarkdownToState pass per
+    // distinct raw (duplicate blocks share), so a document of N anchored
+    // blocks costs at most N small re-parses, only when preserveFormatting.
+    private _reparseStatesCache: Map<string, TState[]>;
+    // Lexer options for the consistency re-parse, set by setParseOptions()
+    // from the muya instance owning the state (see JSONState.getMarkdownFromState).
+    private _parseOptions: {
+        footnote: boolean;
+        math: boolean;
+        isGitlabCompatibilityEnabled: boolean;
+        trimUnnecessaryCodeBlockEmptyLines: boolean;
+        frontMatter: boolean;
+    } | null;
+    // [CUSTOM-END] CUSTOM-20260904-004
 
     constructor(
         {
             listIndentation,
+            preserveFormatting = false,
         }: IExportMarkdownOptions = {
             listIndentation: 1,
         },
@@ -71,6 +98,12 @@ export default class ExportMarkdown {
         this._listType = []; // 'ul' or 'ol'
         // helper to translate the first tight item in a nested list
         this._isLooseParentList = true;
+
+        // [CUSTOM-BEGIN] CUSTOM-20260904-004
+        this._preserveFormatting = preserveFormatting;
+        this._reparseStatesCache = new Map();
+        this._parseOptions = null;
+        // [CUSTOM-END] CUSTOM-20260904-004
 
         // set and validate settings
         this._listIndentation = 'number';
@@ -90,6 +123,78 @@ export default class ExportMarkdown {
         return this._convertStatesToMarkdown(states);
     }
 
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    /**
+     * Provide the lexer options used by the raw-replay consistency check.
+     * Must be called before generate() when preserveFormatting is on;
+     * JSONState.getMarkdownFromState does this from its muya instance.
+     */
+    setParseOptions(options: {
+        footnote: boolean;
+        math: boolean;
+        isGitlabCompatibilityEnabled: boolean;
+        trimUnnecessaryCodeBlockEmptyLines: boolean;
+        frontMatter: boolean;
+    }): void {
+        this._parseOptions = options;
+    }
+
+    /**
+     * Replay check: does `raw` still describe this exact state?
+     * Re-parses the raw source (cached) and deep-compares against the live
+     * state with the anchor fields stripped from both sides. Any user edit
+     * to the block (text, cells, list items) makes the comparison fail and
+     * the block falls back to the normalized serializer.
+     */
+    private _rawMatchesState(state: TState, raw: string): boolean {
+        if (!this._parseOptions)
+            return false;
+
+        let reparsed = this._reparseStatesCache.get(raw);
+        if (!reparsed) {
+            reparsed = new MarkdownToState({
+                ...this._parseOptions,
+                preserveFormatting: false,
+            }).generate(raw);
+            this._reparseStatesCache.set(raw, reparsed);
+        }
+
+        // A raw that re-parses into multiple top-level blocks is only safe to
+        // replay at the top level of the document where blocks are joined by
+        // newline rules; nested contexts (list items, blockquotes) use the
+        // normalized serializer anyway, so demand a single block.
+        if (reparsed.length !== 1)
+            return false;
+
+        return this._statesEquivalent(reparsed[0], state);
+    }
+
+    // Deep equality over two states after stripping the anchor fields
+    // (raw / leadingBlankLines) — the parser does not produce them when
+    // re-parsing with preserveFormatting: false, and the live state carries
+    // them, so both sides are normalized before comparison.
+    private _stripAnchors(value: unknown): unknown {
+        if (Array.isArray(value))
+            return value.map(item => this._stripAnchors(item));
+        if (value && typeof value === 'object') {
+            const out: Record<string, unknown> = {};
+            for (const [key, entry] of Object.entries(value)) {
+                if (key === 'raw' || key === 'leadingBlankLines')
+                    continue;
+                out[key] = this._stripAnchors(entry);
+            }
+            return out;
+        }
+        return value;
+    }
+
+    private _statesEquivalent(a: TState, b: TState): boolean {
+        const sa = JSON.stringify(this._stripAnchors(a));
+        const sb = JSON.stringify(this._stripAnchors(b));
+        return sa === sb;
+    }
+    // [CUSTOM-END] CUSTOM-20260904-004
+
     private _convertStatesToMarkdown(
         states: TState[],
         indent = '',
@@ -108,6 +213,42 @@ export default class ExportMarkdown {
             ) {
                 lastListBullet = '';
             }
+
+            // [CUSTOM-BEGIN] CUSTOM-20260904-004 - replay anchored raw source
+            // Only at the document top level (empty indent/listIndent): the
+            // anchors are recorded for top-level blocks and raw text can only
+            // be spliced safely where block-level joining rules apply.
+            if (
+                this._preserveFormatting
+                && indent === ''
+                && listIndent === ''
+                && typeof (state as { raw?: string }).raw === 'string'
+            ) {
+                const raw = (state as { raw?: string }).raw!;
+                if (this._rawMatchesState(state, raw)) {
+                    const blanks = (state as { leadingBlankLines?: number }).leadingBlankLines;
+                    // Splicing convention: each block's serialization ends with
+                    // exactly one `\n`; the NEXT block decides the gap before
+                    // itself. `raw` is stored newline-trimmed, so replay emits
+                    // `raw + '\n'` and the gap separator carries `blanks` extra
+                    // newlines (upstream default = 1 blank line = 1 extra `\n`).
+                    if (result.length === 0) {
+                        // First block: replay any leading blank lines of the
+                        // document verbatim (usually none).
+                        const lead = Math.max(blanks ?? 0, 0);
+                        if (lead > 0)
+                            result.push(`${'\n'.repeat(lead)}`);
+                        result.push(`${raw}\n`);
+                    }
+                    else {
+                        const gap = Math.max(blanks ?? 1, 1);
+                        result.push(`${'\n'.repeat(gap)}${raw}\n`);
+                    }
+                    previousState = state;
+                    continue;
+                }
+            }
+            // [CUSTOM-END] CUSTOM-20260904-004
 
             if (isAnyListState(state)) {
                 const markerOverride = !this._isLooseParentList

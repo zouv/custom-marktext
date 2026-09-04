@@ -100,6 +100,9 @@ class JSONState {
             trimUnnecessaryCodeBlockEmptyLines,
             frontMatter,
             math,
+            // [CUSTOM-BEGIN] CUSTOM-20260904-004 - thread preserveFormatting into the parser
+            preserveFormattingOnSave,
+            // [CUSTOM-END] CUSTOM-20260904-004
         } = this._muya.options;
 
         return new MarkdownToState({
@@ -108,6 +111,9 @@ class JSONState {
             trimUnnecessaryCodeBlockEmptyLines,
             frontMatter,
             math,
+            // [CUSTOM-BEGIN] CUSTOM-20260904-004
+            preserveFormatting: preserveFormattingOnSave === true,
+            // [CUSTOM-END] CUSTOM-20260904-004
         }).generate(markdown);
     }
 
@@ -235,9 +241,29 @@ class JSONState {
     // `getMarkdown` uses. Used by `Muya.getCursorOffset` to serialize a
     // sentinel-bearing state clone WITHOUT mutating the live `_state`.
     getMarkdownFromState(state: TState[]): string {
+        // [CUSTOM-BEGIN] CUSTOM-20260904-004 - thread preserveFormatting + parse options into the serializer
+        const preserve = this._muya.options.preserveFormattingOnSave === true;
         const mdGenerator = new StateToMarkdown({
             listIndentation: this._muya.options.listIndentation,
+            preserveFormatting: preserve,
         });
+        if (preserve) {
+            const {
+                footnote,
+                isGitlabCompatibilityEnabled,
+                trimUnnecessaryCodeBlockEmptyLines,
+                frontMatter,
+                math,
+            } = this._muya.options;
+            mdGenerator.setParseOptions({
+                footnote,
+                isGitlabCompatibilityEnabled,
+                trimUnnecessaryCodeBlockEmptyLines,
+                frontMatter,
+                math,
+            });
+        }
+        // [CUSTOM-END] CUSTOM-20260904-004
 
         return mdGenerator.generate(state);
     }

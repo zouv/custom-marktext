@@ -227,6 +227,11 @@
     "type": "boolean",
     "default": true
   },
+  "preserveFormattingOnSave": {
+    "description": "Markdown--Keep the original formatting of unchanged lines when saving",
+    "type": "boolean",
+    "default": false
+  },
   "bulletListMarker": {
     "description": "Markdown--The marker used in bullet list",
     "enum": ["-", "*", "+"],

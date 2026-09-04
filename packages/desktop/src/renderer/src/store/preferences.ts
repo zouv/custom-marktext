@@ -69,6 +69,9 @@ export interface PreferencesState {
   autoCheck: boolean
 
   preferLooseListItem: boolean
+  // [CUSTOM-BEGIN] CUSTOM-20260904-004
+  preserveFormattingOnSave: boolean
+  // [CUSTOM-END] CUSTOM-20260904-004
   bulletListMarker: BulletListMarker | string
   orderListDelimiter: OrderListDelimiter | string
   preferHeadingStyle: PreferHeadingStyle | string
@@ -185,6 +188,9 @@ export const usePreferencesStore = defineStore('preferences', {
     autoCheck: false,
 
     preferLooseListItem: true,
+    // [CUSTOM-BEGIN] CUSTOM-20260904-004
+    preserveFormattingOnSave: false,
+    // [CUSTOM-END] CUSTOM-20260904-004
     bulletListMarker: '-',
     orderListDelimiter: '.',
     preferHeadingStyle: 'atx',

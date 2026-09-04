@@ -672,6 +672,7 @@
         },
         "orderListDelimiter": "Ordered list delimiter",
         "preferLooseListItem": "Prefer loose list items",
+        "preserveFormattingOnSave": "Keep original formatting of unchanged lines when saving",
         "title": "Lists"
       }
     },
