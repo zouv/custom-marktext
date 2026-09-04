@@ -94,7 +94,7 @@ echo "== 2) 总览表登记的上游文件但代码里找不到对应标记 =="
 # 仅校验精确路径行；纯自定义路径（上游不存在）与测试文件不要求标记
 is_custom_only() {
   case "$1" in
-    CUSTOMIZATIONS/*|.agents/*|AGENTS.md|CLAUDE.md|.gitignore|eslint.config.js|*.test.*|*.spec.*|*.test.tsx) return 0 ;;
+    CUSTOMIZATIONS/*|.agents/*|AGENTS.md|CLAUDE.md|.gitignore|eslint.config.js|pnpm-lock.yaml|*.json|*.test.*|*.spec.*|*.test.tsx) return 0 ;;
     *) return 1 ;;
   esac
 }
