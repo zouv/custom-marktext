@@ -1,12 +1,12 @@
 ---
-current_upstream_version: "develop@1d3025b2"
-current_upstream_commit: "1d3025b2b6306613a6fa0f822ba9bcaf8890b094"
-custom_version: ""
-last_merge_date: "2026-09-04"
-last_release_version: ""
-last_release_date: ""
-vendor_branch: "vendor/develop"
-upstream_remote: "https://github.com/marktext/marktext.git"
+current_upstream_version: 'develop@1d3025b2'
+current_upstream_commit: '1d3025b2b6306613a6fa0f822ba9bcaf8890b094'
+custom_version: ''
+last_merge_date: '2026-09-04'
+last_release_version: ''
+last_release_date: ''
+vendor_branch: 'vendor/develop'
+upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
 
 # MarkText 自定义改动登记
@@ -14,10 +14,12 @@ upstream_remote: "https://github.com/marktext/marktext.git"
 > **本文件是改动登记账本（纯数据）**。机制与规则（冲突策略、标记格式、类型/状态字典、frontmatter 字段职责）见 [`CUSTOMIZATIONS/README.md`](./README.md)。
 >
 > **两层结构（怎么用）**：
+>
 > - **改动总览（按文件）**——查"某个文件现在改了什么、上游合并时怎么处理"：**只读这一节**，每个文件一条，多轮演进已合并为当前状态，无需读历史轮次。
 > - **变更日志（按次）**——查"某次改动何时发生、为什么、怎么验证"：按时间倒序的 append-only 流水，只增不改（历史是事实）。
 >
 > **AI Agent 注意**：
+>
 > 1. 开发前读**改动总览**定位相关文件与冲突策略（不必通读变更日志）
 > 2. 完成改动后调用 `marktext-record-change` skill：**总览里已有该文件就更新那一节**（合并描述、追加演进链 id），没有就新增一节；变更日志追加一轮记录
 > 3. 合并上游时按总览的冲突策略列处理
@@ -43,17 +45,32 @@ upstream_remote: "https://github.com/marktext/marktext.git"
 >
 > **状态字典**：`active`（生效中）/ `deprecated`（已废弃）/ `merged-upstream`（上游已原生支持）。**冲突策略**字典见 README.md。
 
-| 文件 | 标记（当前） | 演进链 | 当前效果（合并后） | 冲突策略 | 状态 |
-|------|-------------|--------|-------------------|---------|------|
-| .gitignore | 20260904-001 | 20260904-001 | 上游忽略 `.agents/` 整目录；改为跟踪 `.agents/`（跨工具 skill 标准路径）与 `.claude/settings.local.json`，忽略 `.zcode/plans/` 会话本地文档 | keep-ours | active |
-| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/） | （纯自定义目录） | 20260904-001→002 | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 脚本套件：init-repo/list-custom/sync-vendor/check-registry + manager.sh/build-unpacked.bat/build-setup.bat/7za-shim.*（本地打包，适配 monorepo：electron-builder 用 --projectDir packages\desktop，产物在仓库根 dist/，产物名 marktext-win-x64-<版本>-setup.exe） | keep-ours | active |
-| AGENTS.md、.agents/skills/* | （纯自定义文件） | 20260904-001 | 会话级硬约束 + 工作流 + skills（merge-upstream/record-change/release） | keep-ours | active |
+| 文件                                                                                   | 标记（当前）                         | 演进链           | 当前效果（合并后）                                                                                                                                                                                                                                                                                                          | 冲突策略                         | 状态   |
+| -------------------------------------------------------------------------------------- | ------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------ |
+| .gitignore                                                                             | 20260904-001                         | 20260904-001     | 上游忽略 `.agents/` 整目录；改为跟踪 `.agents/`（跨工具 skill 标准路径）与 `.claude/settings.local.json`，忽略 `.zcode/plans/` 会话本地文档                                                                                                                                                                                 | keep-ours                        | active |
+| packages/desktop/src/main/globalSetting.ts                                             | 20260904-003                         | 20260904-003     | `__static` 路径去掉上游的 `.replace(/\\/g,'\\\\')`（该 replace 在打包后把 Windows 反斜杠路径破坏成字面双反斜杠，preference.json 读取失败弹 Startup error）                                                                                                                                                                  | merge-manual                     | active |
+| packages/desktop/package.json                                                          | （无标记，json 无法注释）            | 20260904-003     | optionalDependencies 新增 `@vscode/ripgrep-win32-x64`（pnpm 隔离布局下 optional 平台包不进 packages/desktop/node_modules，electron-builder 收集不到 → 打包版启动报 Could not find @vscode/ripgrep-win32-x64）                                                                                                               | merge-manual                     | active |
+| pnpm-lock.yaml                                                                         | （无标记，lock 随 install 重新生成） | 20260904-003     | 随 optionalDependencies 变更重新生成                                                                                                                                                                                                                                                                                        | 接受上游后 pnpm install 重新生成 | active |
+| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/） | （纯自定义目录）                     | 20260904-001→002 | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 脚本套件：init-repo/list-custom/sync-vendor/check-registry + manager.sh/build-unpacked.bat/build-setup.bat/7za-shim.\*（本地打包，适配 monorepo：electron-builder 用 --projectDir packages\desktop，产物在仓库根 dist/，产物名 marktext-win-x64-<版本>-setup.exe） | keep-ours                        | active |
+| AGENTS.md、.agents/skills/\*                                                           | （纯自定义文件）                     | 20260904-001     | 会话级硬约束 + 工作流 + skills（merge-upstream/record-change/release）                                                                                                                                                                                                                                                      | keep-ours                        | active |
 
 ---
 
 ## 变更日志
 
+### 2026-09-04 - CUSTOM-20260904-003
+
+- **功能**：修复打包版启动报错（Error 对话框：Startup error + ripgrep 模块缺失）——两个上游 bug，均只在 Windows 打包版触发
+- **改动文件**：packages/desktop/src/main/globalSetting.ts、packages/desktop/package.json、pnpm-lock.yaml、CUSTOMIZATIONS/registry.md、CUSTOMIZATIONS/docs/pitfalls.md、CUSTOMIZATIONS/architecture.md
+- **详细说明**：
+  - 错误 1（Startup error: Can not load static preference.json file）：`globalSetting.ts` 把 `__static` 路径做了 `.replace(/\\/g, '\\\\')`（单反斜杠→双反斜杠）。dev 下 `app.getAppPath()` 返回正斜杠路径不命中该 replace 所以无恙；打包后 `process.resourcesPath` 返回反斜杠路径，replace 后变成字面 `C:\\...\\resources\\static`，`fs.readFileSync` 找不到 preference.json，Accessor 构造抛错弹窗。修复：去掉 replace（path.join 结果本就是合法路径）
+  - 错误 2（Uncaught Exception: Could not find @vscode/ripgrep-win32-x64）：`@vscode/ripgrep` 的 ESM 入口 `require.resolve('@vscode/ripgrep-win32-x64/bin/rg.exe')`。pnpm 隔离布局下该 optional 平台包只存在于 `.pnpm` 虚拟 store 邻位，不会链接到 `packages/desktop/node_modules`（dev 下 Node 经 symlink 解析能找到；electron-builder 只扫物理布局收不到）→ asar 里没有该包，主进程加载即崩。修复：把 `@vscode/ripgrep-win32-x64` 显式加进 `packages/desktop` 的 optionalDependencies，让 pnpm 在 `packages/desktop/node_modules/@vscode/` 建立链接，builder 即可收集。副作用：打非 Windows 平台需要对应平台包（上游 lock 里 optional 标记会自动按平台过滤，跨平台构建时按需加对应条目）
+  - 排查手段沉淀（见 pitfalls #3）：Electron GUI 进程在 Git Bash 下 stdout/stderr 不可见（管道会挂起进程），`--enable-logging`/`--log-file`/重定向全无效；有效方法是 UI Automation 读 Error 对话框文本，或在加载 main bundle 前 patch `dialog.showErrorBox`/`uncaughtException` 落盘的 probe 脚本
+- **验证方式**：`pnpm run build:unpack` + `build-setup.bat` 全流程通过；UIA 读取窗口树确认主窗口 `Untitled-1`（编辑器正常打开，非 Error）；asar list 确认 `node_modules/@vscode/ripgrep-win32-x64/bin/rg.exe` 已入包（rg.exe 实体在 app.asar.unpacked）；`sh CUSTOMIZATIONS/scripts/check-registry.sh` 全绿
+- **基于上游版本**：develop@1d3025b2
+
 ### 2026-09-04 - CUSTOM-20260904-002
+
 - **功能**：同步 chatbox 参考项目的本地打包脚本套件并完成首次编译打包（Windows x64）
 - **改动文件**：CUSTOMIZATIONS/scripts/manager.sh（新增）、CUSTOMIZATIONS/scripts/build-unpacked.bat（新增）、CUSTOMIZATIONS/scripts/build-setup.bat（新增）、CUSTOMIZATIONS/scripts/7za-shim.cs + 7za-shim.exe（自 chatbox 仓库复制）、CUSTOMIZATIONS/registry.md、CUSTOMIZATIONS/docs/pitfalls.md、CUSTOMIZATIONS/README.md、CUSTOMIZATIONS/architecture.md
 - **详细说明**：
@@ -64,6 +81,7 @@ upstream_remote: "https://github.com/marktext/marktext.git"
 - **基于上游版本**：develop@1d3025b2
 
 ### 2026-09-04 - CUSTOM-20260904-001
+
 - **功能**：初始化 custom-marktext 仓库（自定义开发文档体系建立）
 - **改动文件**：.gitignore、CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/init-repo.ps1、scripts/list-custom.ps1、scripts/sync-vendor.ps1、scripts/check-registry.sh、src/.gitkeep、patches/.gitkeep）、AGENTS.md、.agents/skills/marktext-record-change/SKILL.md、.agents/skills/marktext-merge-upstream/SKILL.md、.agents/skills/marktext-release/SKILL.md
 - **详细说明**：
@@ -75,5 +93,6 @@ upstream_remote: "https://github.com/marktext/marktext.git"
 - **基于上游版本**：develop@1d3025b2
 
 ### _(初始创建)_
+
 - 基于上游 marktext（develop@1d3025b2）创建自定义分支
 - 初始化 CUSTOMIZATIONS 目录结构和追踪体系
