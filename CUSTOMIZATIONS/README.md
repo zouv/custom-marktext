@@ -98,6 +98,15 @@ Vue 单文件组件（`.vue`）中标记注释写在 `<template>` / `<script>` �
 ## 辅助脚本
 
 ```bash
+# 统一入口（install/dev/lint/test/unpacked/setup/artifacts/clean）
+sh ./CUSTOMIZATIONS/scripts/manager.sh help
+
+# 打 unpacked 免安装目录包（dist/win-unpacked/）
+sh ./CUSTOMIZATIONS/scripts/manager.sh unpacked
+
+# 打 NSIS Setup 安装包（dist/marktext-win-x64-<版本>-setup.exe）
+sh ./CUSTOMIZATIONS/scripts/manager.sh setup
+
 # 初始化仓库（首次 clone 后；仓库已初始化过则跳过）
 pwsh ./CUSTOMIZATIONS/scripts/init-repo.ps1 -BaseRef upstream/develop
 
@@ -110,6 +119,8 @@ pwsh ./CUSTOMIZATIONS/scripts/sync-vendor.ps1 -Ref upstream/develop -Push
 # 登记一致性自检（每次 record-change 后必须全绿）
 sh ./CUSTOMIZATIONS/scripts/check-registry.sh
 ```
+
+打包脚本要点（适配 marktext monorepo）：electron-builder 以 `--projectDir packages\desktop` 调用（配置与输出目录由该包的 electron-builder.yml 决定，产物在仓库根 `dist/`）；bat 内置杀软锁文件 15s 退避重试 ×3；7za shim 应对无 symlink 权限机器的 winCodeSign 解压中断（pnpm install 会重置 node_modules，需重装）。
 
 ## 本仓库的分支模型（与 chatbox 参考项目的差异）
 

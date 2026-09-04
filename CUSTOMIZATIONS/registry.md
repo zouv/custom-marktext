@@ -46,12 +46,22 @@ upstream_remote: "https://github.com/marktext/marktext.git"
 | 文件 | 标记（当前） | 演进链 | 当前效果（合并后） | 冲突策略 | 状态 |
 |------|-------------|--------|-------------------|---------|------|
 | .gitignore | 20260904-001 | 20260904-001 | 上游忽略 `.agents/` 整目录；改为跟踪 `.agents/`（跨工具 skill 标准路径）与 `.claude/settings.local.json`，忽略 `.zcode/plans/` 会话本地文档 | keep-ours | active |
-| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/） | （纯自定义目录） | 20260904-001 | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 辅助脚本 | keep-ours | active |
+| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/） | （纯自定义目录） | 20260904-001→002 | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 脚本套件：init-repo/list-custom/sync-vendor/check-registry + manager.sh/build-unpacked.bat/build-setup.bat/7za-shim.*（本地打包，适配 monorepo：electron-builder 用 --projectDir packages\desktop，产物在仓库根 dist/，产物名 marktext-win-x64-<版本>-setup.exe） | keep-ours | active |
 | AGENTS.md、.agents/skills/* | （纯自定义文件） | 20260904-001 | 会话级硬约束 + 工作流 + skills（merge-upstream/record-change/release） | keep-ours | active |
 
 ---
 
 ## 变更日志
+
+### 2026-09-04 - CUSTOM-20260904-002
+- **功能**：同步 chatbox 参考项目的本地打包脚本套件并完成首次编译打包（Windows x64）
+- **改动文件**：CUSTOMIZATIONS/scripts/manager.sh（新增）、CUSTOMIZATIONS/scripts/build-unpacked.bat（新增）、CUSTOMIZATIONS/scripts/build-setup.bat（新增）、CUSTOMIZATIONS/scripts/7za-shim.cs + 7za-shim.exe（自 chatbox 仓库复制）、CUSTOMIZATIONS/registry.md、CUSTOMIZATIONS/docs/pitfalls.md、CUSTOMIZATIONS/README.md、CUSTOMIZATIONS/architecture.md
+- **详细说明**：
+  - 脚本套件自 costom-chatbox CUSTOMIZATIONS/scripts/ 移植（manager.sh 统一入口 + build-unpacked.bat/build-setup.bat 分步打包 + 7za-shim 防 winCodeSign 解压中断），按 marktext monorepo 适配差异：① 构建/打包命令改走根 package.json 代理（build:unpack / build:win:x64，含 minify-locales + electron-rebuild）；② electron-builder 配置在 packages/desktop（directories.output=../../dist），故以 `--projectDir packages\desktop` 调用（`-C` 是 yargs 风格缩写会被误认为位置参数，第一次跑失败在 `Unknown argument: C`）；③ 产物名实际为 marktext-win-x64-0.20.0-dev-setup.exe / .zip（electron-builder.yml artifactName 模板），bat 输出提示按此修正；④ 产物目录为仓库根 dist/（chatbox 是 release/build/）；⑤ 7zip-bin 经 builder-util 的 SZA_PATH 传递给 app-builder 解压 .7z 工具缓存，pnpm 隔离布局可能不暴露该路径——脚本对不存在时降级为直接走 builder 自身流程（本机共享缓存 %LOCALAPPDATA%\electron-builder\Cache 已完整，未触发 shim）
+  - 安装依赖踩坑（见 pitfalls #2）：pnpm install 的 postinstall 在 electron-rebuild native-keymap 时报 MSB8040（Spectre-mitigated libs required）。本机 VS2022 Community + BuildTools 均未装 MSVC Spectre 组件。解法：改 node_modules 内 native-keymap/binding.gyp 的 `SpectreMitigation: 'Spectre'` → `'false'` 后 electron-rebuild 通过（ced/keytar/native-keymap 全部 Rebuild Complete）。此改动位于 node_modules（git 不跟踪、pnpm install 会重置），治本需 VS Installer 勾选"Spectre 缓解库"组件或长期方案挂 pnpm patch
+  - 编译产物：packages/desktop/out/{main,preload,renderer}（27.1s）；打包产物：dist/marktext-win-x64-0.20.0-dev-setup.exe（119MB NSIS）+ .zip（163MB）+ blockmap + latest.yml + dist/win-unpacked/（免安装目录包）
+- **验证方式**：`pnpm run build:unpack` 通过；`pnpm run typecheck` 0 错误；`pnpm run lint` 0 errors / 135 warnings（上游既有基线）；`cmd //c build-setup.bat --skip-build` 全流程成功并回显产物；`dist/win-unpacked/marktext.exe` 启动验证（进程正常拉起，10s 后正常终止）；`sh CUSTOMIZATIONS/scripts/check-registry.sh` 全绿
+- **基于上游版本**：develop@1d3025b2
 
 ### 2026-09-04 - CUSTOM-20260904-001
 - **功能**：初始化 custom-marktext 仓库（自定义开发文档体系建立）
