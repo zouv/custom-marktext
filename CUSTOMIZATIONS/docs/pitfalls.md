@@ -68,3 +68,16 @@
   - 边界值（0、空、尾部）在"记录→回放"机制里最易被默认值吃掉——设计回放 API 时显式区分"未记录（默认 1）"与"记录为 0"；
   - **复现测试必须用原始结构文件**：上一轮验证用了已被上游归一化破坏过一次的文件（标准 1 空行结构），0 空行边界 bug 被掩盖、误判为"用户测旧包"。用户的"修改前备份"才是正确夹具。
 - **验证**：preserveZeroGap.spec.ts 7 用例 + 副本真实文件 muya 实例恒等 + 新包 CDP 端到端落盘只变一行。
+
+## 7. 推 tag 会触发上游自带的 release CI 自动构建全平台并覆盖 release 正文
+
+- **日期**：2026-09-04（v0.20.0-custom.1 发布时发现）
+- **现象**：推送 tag `v0.20.0-custom.1` 后，本地手动上传的 3 个 Windows 资产之外，release 页面凭空多出 23 个资产（Linux/macOS/Windows 全平台，含 SHA256SUMS.txt）；且 release 正文被覆盖成上游 CI 的通用模板（预发布/未签名 macOS 提示），我们写的详细 release notes 丢失。
+- **根因**：上游 marktext 自带 `.github/workflows/release.yml`，`on: push: tags` 触发。它在 GitHub Actions 里全平台构建（约 15 分钟）并 electron-builder `--publish always` 上传到同名 release，同时**用自己的模板重写了 release 正文**。我们上传资产在先、CI 完成在后，未核对最终状态，险些没发现正文被换。
+- **解法**（发布流程固定加两步）：
+  1. **本地资产与 CI 资产不得混挂**：两者是不同构建（本地 setup.exe 125,436,163 字节 vs CI 125,301,456 字节，SHA-256 必不同）。二选一：
+     - A（推荐）：不本地打包传资产，直接用 CI 构建的全平台 23 资产，只需 CI 完成后用我们的 release notes **PATCH release body**；
+     - B：完全本地发布——推 tag 前把 release.yml 的 trigger 改为 `workflow_dispatch`（CUSTOM 标记 + registry 登记），本地传资产。
+  2. **发完最后一步必做核对**：`GET /repos/zouv/custom-marktext/releases/tags/<tag>` 检查 assets 列表与 body，CI 覆盖正文后需要 PATCH 修正。
+- **教训**：基于上游建自定义仓库时，发布前先看 `.github/workflows/` 有无 `on: push: tags` 的 release 工作流——CI 会"抢发布"（构建、传资产、改正文）。资产大小/哈希核对是发现"同名文件不同构建"的唯一手段；GitHub 首页侧栏不显示 release entry ≠ release 不存在（prerelease 照样不显示，需点进 Releases 页确认）。
+- **验证**：`GET /releases/tags/v0.20.0-custom.1` → 23 资产全部 `uploaded`，body 已 PATCH 回我们的完整 release notes。
