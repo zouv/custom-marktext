@@ -246,10 +246,20 @@
       "expandAll": "すべて展開",
       "collapseAll": "すべて折りたたむ"
     },
+    "currentDir": {
+      "title": "現在のディレクトリ",
+      "refresh": "更新",
+      "loading": "読み込み中...",
+      "empty": "このディレクトリに Markdown ファイルがありません。",
+      "noDirectory": "ファイルを保存するとディレクトリを表示できます。",
+      "readError": "ディレクトリの読み取りに失敗しました。",
+      "retry": "再試行"
+    },
     "icons": {
       "files": "ファイル",
       "search": "検索",
       "toc": "目次",
+      "currentDir": "現在のディレクトリ",
       "settings": "設定"
     }
   },
@@ -672,7 +682,8 @@
         },
         "orderListDelimiter": "番号付きリスト区切り文字",
         "preferLooseListItem": "ルーズリスト項目を優先",
-        "title": "リスト"
+        "title": "リスト",
+        "preserveFormattingOnSave": "保存時に未変更行の元の書式を保持する"
       }
     },
     "theme": {

@@ -246,10 +246,20 @@
       "expandAll": "Alle ausklappen",
       "collapseAll": "Alle einklappen"
     },
+    "currentDir": {
+      "title": "Aktuelles Verzeichnis",
+      "refresh": "Aktualisieren",
+      "loading": "Lädt...",
+      "empty": "Keine Markdown-Dateien in diesem Verzeichnis.",
+      "noDirectory": "Speichere die Datei, um ihr Verzeichnis anzuzeigen.",
+      "readError": "Verzeichnis konnte nicht gelesen werden.",
+      "retry": "Erneut versuchen"
+    },
     "icons": {
       "files": "Dateien",
       "search": "Suchen",
       "toc": "Inhaltsverzeichnis",
+      "currentDir": "Aktuelles Verzeichnis",
       "settings": "Einstellungen"
     }
   },
@@ -672,7 +682,8 @@
         },
         "orderListDelimiter": "Nummerierte Liste Trennzeichen",
         "preferLooseListItem": "Lockere Listenelemente bevorzugen",
-        "title": "Listen"
+        "title": "Listen",
+        "preserveFormattingOnSave": "Originalformatierung unveränderter Zeilen beim Speichern beibehalten"
       }
     },
     "theme": {

@@ -26,10 +26,7 @@
         </li>
       </ul>
     </div>
-    <div
-      v-show="rightColumn"
-      class="right-column"
-    >
+    <div v-show="rightColumn" class="right-column">
       <tree
         v-if="rightColumn === 'files'"
         :project-tree="projectTree"
@@ -38,12 +35,11 @@
       />
       <side-bar-search v-else-if="rightColumn === 'search'" />
       <toc v-else-if="rightColumn === 'toc'" />
+      <!-- [CUSTOM-BEGIN] CUSTOM-20260909-001 - side bar "current directory" panel -->
+      <current-dir v-else-if="rightColumn === 'currentDir'" />
+      <!-- [CUSTOM-END] CUSTOM-20260909-001 -->
     </div>
-    <div
-      v-show="rightColumn"
-      ref="dragBar"
-      class="drag-bar"
-    />
+    <div v-show="rightColumn" ref="dragBar" class="drag-bar" />
   </div>
 </template>
 
@@ -57,6 +53,9 @@ import { sideBarIcons, sideBarBottomIcons } from './help'
 import Tree from './tree.vue'
 import SideBarSearch from './search.vue'
 import Toc from './toc.vue'
+// [CUSTOM-BEGIN] CUSTOM-20260909-001 - side bar "current directory" panel
+import CurrentDir from './currentDir.vue'
+// [CUSTOM-END] CUSTOM-20260909-001
 import { storeToRefs } from 'pinia'
 import type { TabDescriptor } from './types'
 

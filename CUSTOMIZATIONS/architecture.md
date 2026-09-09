@@ -132,6 +132,7 @@ packages/muya/src/
 | 标签页管理        | `main/commands/tab.ts` + `renderer/src/components/editorWithTabs/` |                                           |
 | 文件系统工具      | `main/filesystem/` + `src/common/filesystem/`                      |                                           |
 | 最近文件/窗口状态 | `main/dataCenter/`（schema.json 定持久化键）                       |                                           |
+| 同目录文件浏览    | `renderer/src/components/sideBar/currentDir.vue`                   | CUSTOM-20260909-001；见 §3.1              |
 
 ### 2.6 IPC 通道
 
@@ -170,7 +171,17 @@ packages/muya/src/
 
 ## 3. 重点链路详解
 
-> 当前无自定义链路。第一个自定义功能落地后，把高频/易错链路按「需求语义 + 关键坑 + 正确实现 + 调用链」格式写到这里。
+### 3.1 侧栏「当前目录」面板（CUSTOM-20260909-001）
+
+- **需求语义**：不 Open Folder 快速浏览/切换当前文件所在目录的 md 文件。
+- **挂载链**：`sideBar/help.ts` sideBarIcons 第 4 项（id `currentDir`）→ 图标条点击走现有 `handleLeftIconClick` → `layout.SET_LAYOUT({ rightColumn: 'currentDir' })` → `sideBar/index.vue` 右列 `v-else-if` 分支渲染 `currentDir.vue`。`rightColumn` 值随 buffered layout 持久化，无需改 layout store。
+- **数据链（零新增 IPC）**：`editor.currentFile.pathname` → `window.path.dirname` → `window.fileUtils.readdir`（`mt::fs::readdir`）→ `hasMarkdownExtension` 过滤 → 排序渲染；`watch(dirPath)` 自动重载 + 手动刷新。
+- **打开链（照抄 treeFile.vue 模式）**：`isSamePathSync` 在 tabs 查重 → 命中 `UPDATE_CURRENT_FILE` 切 tab；未命中 `send('mt::open-file')` → main `openTab` → `mt::open-new-tab` → `NEW_TAB_WITH_CONTENT`。
+- **坑**：
+  - CDP 驱动 Vue onClick 必须用元素原生 `.click()`，`dispatchEvent(new MouseEvent)` 收不到 Vue 合成事件监听；
+  - `pnpm run build:unpack` 只编译 `out/`，不刷新 `dist/win-unpacked/`——端到端前必须 `manager.sh unpacked` 重打包，否则测的是旧包；
+  - 上游目录下纯新增文件（如 `sideBar/currentDir.vue`）无需 CUSTOM 标记，registry 总览用聚合行 `DIR/（file 新增）` 登记才能过 check-registry §2；
+  - locale 新键必须 11 语言全补（`locale-validation.spec.ts` 强制键 parity；004 当时漏 9 语言是历史欠账，本轮已清）。
 
 ---
 

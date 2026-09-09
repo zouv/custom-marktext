@@ -246,10 +246,20 @@
       "expandAll": "Expand all",
       "collapseAll": "Collapse all"
     },
+    "currentDir": {
+      "title": "Current Directory",
+      "refresh": "Refresh",
+      "loading": "Loading...",
+      "empty": "No Markdown files in this directory.",
+      "noDirectory": "Save the file to view its directory.",
+      "readError": "Failed to read the directory.",
+      "retry": "Retry"
+    },
     "icons": {
       "files": "Files",
       "search": "Search",
       "toc": "Table of Contents",
+      "currentDir": "Current Directory",
       "settings": "Settings"
     }
   },
