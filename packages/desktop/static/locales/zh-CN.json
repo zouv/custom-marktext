@@ -246,10 +246,20 @@
       "expandAll": "全部展开",
       "collapseAll": "全部折叠"
     },
+    "currentDir": {
+      "title": "当前目录",
+      "refresh": "刷新",
+      "loading": "加载中…",
+      "empty": "此目录下没有 Markdown 文件。",
+      "noDirectory": "保存文件后即可查看其所在目录。",
+      "readError": "读取目录失败。",
+      "retry": "重试"
+    },
     "icons": {
       "files": "文件",
       "search": "搜索",
       "toc": "目录",
+      "currentDir": "当前目录",
       "settings": "设置"
     }
   },

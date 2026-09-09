@@ -246,10 +246,20 @@
       "expandAll": "全部展開",
       "collapseAll": "全部折疊"
     },
+    "currentDir": {
+      "title": "目前目錄",
+      "refresh": "重新整理",
+      "loading": "載入中…",
+      "empty": "此目錄下沒有 Markdown 檔案。",
+      "noDirectory": "儲存檔案後即可查看其所在目錄。",
+      "readError": "讀取目錄失敗。",
+      "retry": "重試"
+    },
     "icons": {
       "files": "檔案",
       "search": "搜尋",
       "toc": "目錄",
+      "currentDir": "目前目錄",
       "settings": "設定"
     }
   },
@@ -672,7 +682,8 @@
         },
         "orderListDelimiter": "有序清單分隔符",
         "preferLooseListItem": "偏好鬆散清單項目",
-        "title": "清單"
+        "title": "清單",
+        "preserveFormattingOnSave": "儲存時保留未變更行的原始格式"
       }
     },
     "theme": {

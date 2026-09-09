@@ -246,10 +246,20 @@
       "expandAll": "Tout développer",
       "collapseAll": "Tout réduire"
     },
+    "currentDir": {
+      "title": "Répertoire actuel",
+      "refresh": "Actualiser",
+      "loading": "Chargement...",
+      "empty": "Aucun fichier Markdown dans ce répertoire.",
+      "noDirectory": "Enregistrez le fichier pour afficher son répertoire.",
+      "readError": "Impossible de lire le répertoire.",
+      "retry": "Réessayer"
+    },
     "icons": {
       "files": "Fichiers",
       "search": "Rechercher",
       "toc": "Table des matières",
+      "currentDir": "Répertoire actuel",
       "settings": "Paramètres"
     }
   },
@@ -672,7 +682,8 @@
         },
         "orderListDelimiter": "Délimiteur de liste ordonnée",
         "preferLooseListItem": "Préférer les éléments de liste lâches",
-        "title": "Listes"
+        "title": "Listes",
+        "preserveFormattingOnSave": "Conserver la mise en forme d'origine des lignes inchangées lors de l'enregistrement"
       }
     },
     "theme": {

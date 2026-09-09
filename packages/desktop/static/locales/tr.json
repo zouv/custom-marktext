@@ -246,10 +246,20 @@
       "expandAll": "Tümünü genişlet",
       "collapseAll": "Tümünü daralt"
     },
+    "currentDir": {
+      "title": "Geçerli dizin",
+      "refresh": "Yenile",
+      "loading": "Yükleniyor...",
+      "empty": "Bu dizinde Markdown dosyası yok.",
+      "noDirectory": "Dizini görmek için dosyayı kaydedin.",
+      "readError": "Dizin okunamadı.",
+      "retry": "Yeniden dene"
+    },
     "icons": {
       "files": "Dosyalar",
       "search": "Ara",
       "toc": "İçindekiler",
+      "currentDir": "Geçerli dizin",
       "settings": "Ayarlar"
     }
   },
@@ -672,7 +682,8 @@
         },
         "orderListDelimiter": "Sıralı liste ayracı",
         "preferLooseListItem": "Gevşek liste öğelerini tercih et",
-        "title": "Listeler"
+        "title": "Listeler",
+        "preserveFormattingOnSave": "Kaydederken değiştirilmemiş satırların özgün biçimini koru"
       }
     },
     "theme": {

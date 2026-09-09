@@ -82,7 +82,8 @@
       "zoomOut": "Uitzoomen",
       "fullScreen": "Volledig scherm",
       "bringAllToFront": "Alles naar voren",
-      "alwaysOnTop": "Altijd bovenaan"
+      "alwaysOnTop": "Altijd bovenaan",
+      "resetZoom": "Zoom herstellen"
     },
     "help": {
       "help": "Help",
@@ -245,10 +246,20 @@
       "expandAll": "Alles uitklappen",
       "collapseAll": "Alles inklappen"
     },
+    "currentDir": {
+      "title": "Huidige map",
+      "refresh": "Vernieuwen",
+      "loading": "Laden...",
+      "empty": "Geen Markdown-bestanden in deze map.",
+      "noDirectory": "Sla het bestand op om de map te bekijken.",
+      "readError": "De map kon niet worden gelezen.",
+      "retry": "Opnieuw proberen"
+    },
     "icons": {
       "files": "Bestanden",
       "search": "Zoeken",
       "toc": "Inhoudsopgave",
+      "currentDir": "Huidige map",
       "settings": "Instellingen"
     }
   },
@@ -671,7 +682,8 @@
         },
         "orderListDelimiter": "Scheidingsteken genummerde lijst",
         "preferLooseListItem": "Losse lijstitems prefereren",
-        "title": "Lijsten"
+        "title": "Lijsten",
+        "preserveFormattingOnSave": "Originele opmaak van ongewijzigde regels behouden bij opslaan"
       }
     },
     "theme": {
