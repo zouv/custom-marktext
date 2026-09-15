@@ -77,6 +77,18 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 
 ## 变更日志
 
+### 2026-09-15 - CUSTOM-20260915-004（v0.20.0-custom.2 发布结果核对）
+
+- **功能**：记录 v0.20.0-custom.2 的实际发布结果与操作教训
+- **改动文件**：CUSTOMIZATIONS/registry.md、.agents/skills/marktext-release/SKILL.md（无代码改动）
+- **详细说明**：
+  - 结果：release id=388829901，`draft=false` / `prerelease=true`，**24 个资产全部 uploaded**，正文已用我们的 release notes 覆盖
+  - 资产与 v0.20.0-custom.1 同构：Windows x64/arm64（setup.exe + zip + blockmap）、macOS x64/arm64（dmg + zip + blockmap）、Linux（AppImage/deb/rpm/snap/tar.gz）、latest\*.yml、builder-debug.yml、SHA256SUMS.txt
+  - `--body-only` 必须配 `--prerelease`：脚本 PATCH 会一并更新 `prerelease` 字段，漏传会把 CI 设好的预发布标记改成 `false`
+  - 教训：匿名轮询 GitHub API 会撞 60 次/小时限流（本次约 20 分钟耗尽，之后持续报 parse-error，差点误判成 CI 卡住）；且 `--body-only` 必须等 **CI 工作流整体 completed** 后再跑——CI 是「先建 draft 写模板正文 → 再提升 published」，中途 PATCH 有被覆盖风险。两条已写入 release skill 坑点 #4
+- **验证方式**：`GET /releases/tags/v0.20.0-custom.2` → 24/24 资产 `uploaded`、`prerelease=true`；正文前 6 行与 `CUSTOMIZATIONS/release-notes/v0.20.0-custom.2.md` 一致、含「侧栏第四面板」等本版特征串
+- **基于上游版本**：develop@1d3025b2
+
 ### 2026-09-15 - CUSTOM-20260915-003（发布 v0.20.0-custom.2）
 
 - **功能**：发布 v0.20.0-custom.2（GitHub Release 预发布）
