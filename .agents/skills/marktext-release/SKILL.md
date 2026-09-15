@@ -44,11 +44,23 @@ pnpm --version   # >= 10
 
 ### 3. GitHub 认证
 
+**本机没有 gh CLI，也不需要它**：Git Credential Manager 里已存有可用 token（scopes 含 `repo`），`CUSTOMIZATIONS/scripts/publish-release.mjs` 已封装取用逻辑（`git credential fill`；token 只在运行时读取、不落盘、不回显）。
+
 ```bash
-gh auth status   # 发布 Release 用；未登录则 gh auth login
+# 自查：能打印出用户名即说明凭证可用（不会打印 token 本身）
+printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | sed -n 's/^username=//p'
 ```
 
-gh 不可用时提示用户安装（`winget install GitHub.cli`）或手动上传。
+只有确实没有凭证时，才考虑 `winget install GitHub.cli` + `gh auth login`。
+
+### 4. 发布路径二选一（重要，见 pitfalls #7）
+
+上游自带的 `.github/workflows/release.yml` 是 `on: push: tags: v*` 触发的——**推 tag 就会自动全平台构建并创建/覆盖 release**。两条路径必须二选一，**不可混挂资产**（本地构建与 CI 构建同名不同内容，SHA-256 必不同）：
+
+| 路径          | 做法                                                                                                                                   | 适用                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **A（推荐）** | 不本地打包。推 tag → CI 全平台构建 24 个资产 → 用 `publish-release.mjs --body-only` 把正文改回我们的 notes                             | 需要全平台产物；省去本地 15min 打包 |
+| **B**         | 推 tag 前先把 `release.yml` 的 trigger 改成 `workflow_dispatch`（CUSTOM 标记 + registry 登记），再本地 `build:win` 并用 `--asset` 上传 | 只要 Windows、要完全掌控正文与产物  |
 
 ## 执行流程
 
@@ -103,7 +115,11 @@ Release Notes 落盘 `CUSTOMIZATIONS/release-notes/<custom-version>.md`（随仓
 **上游版本**：marktext/marktext@<upstream-ref>
 ```
 
-### 第四步：打包
+### 第四步：打包（仅路径 B）
+
+**路径 A（推荐）跳过本步**——产物由 CI 全平台构建，本地不打包。
+
+路径 B（本地 Windows 包）才需要：
 
 ```bash
 pnpm run build:win        # Windows x64：NSIS + zip（自动 minify-locales + electron-rebuild）
@@ -135,19 +151,24 @@ git push origin custom/main
 git push origin "<custom-version>"
 ```
 
-### 第六步：创建 GitHub Release
+> ⚠️ `git push origin "<custom-version>"` 这一步会**立即触发上游 `release.yml` 的全平台构建**（约 15 分钟）。推送前确认发布提交已经定稿——**tag 打好后不要再 amend/改写该提交**，否则 tag 会留在游离提交上（后续用 tag 算 diff 基准会出错）。
+
+### 第六步：等待 / 创建 GitHub Release
+
+推 tag 后 CI 会自动构建并抢先创建 release，并把**正文覆盖成上游模板**（pitfalls #7）。等它跑完，把正文改回我们的 release notes：
 
 ```bash
-gh release create "<custom-version>" \
-  dist/<artifact-1> dist/<artifact-2> \
-  --title "<custom-version>" \
-  --notes-file CUSTOMIZATIONS/release-notes/<custom-version>.md \
-  --target custom/main
+# 幂等，可重跑；release 尚未出现时会轮询等待 CI（最多 30 分钟）
+node CUSTOMIZATIONS/scripts/publish-release.mjs "<custom-version>" --body-only --wait 1800
 ```
 
-基线为 develop 提交（非正式 tag）时加 `--prerelease`。
+- 路径 A（CI 全平台）：如上，不传 `--asset`。
+- 路径 B（本地打包）：`--asset dist/<产物> --asset dist/<产物>.blockmap`，同名旧资产会先删后传。
+- 基线为 develop 提交（非正式 tag）时加 `--prerelease`。
 
 ### 第七步：验证与报告
+
+上一条命令末尾会打印远端 release 状态（draft / prerelease / 资产数量与 `uploaded` 状态）——确认资产齐备且正文是我们的 notes 即通过。再在浏览器打开 release 页面肉眼确认一遍，并下载一个产物验证。
 
 ```
 === Release 发布完成 ===
@@ -160,6 +181,28 @@ Release URL：https://github.com/zouv/custom-marktext/releases/tag/<custom-versi
 ```
 
 浏览器确认上传成功，下载验证。
+
+## 坑点与经验
+
+### 1. 管道会吃掉退出码 —— 别用 `| tail` 判断成败
+
+```bash
+pnpm run test 2>&1 | tail -60     # ❌ 退出码是 tail 的，测试失败也返回 0
+pnpm run test > /tmp/t.log 2>&1   # ✅ 重定向到文件，再 grep / Read
+```
+
+本次发布真实踩过：后台跑 `pnpm run test | tail -25` 报告 "exit code 0"，实际是 11 个用例失败。凡是要靠退出码判断成败的场合，一律重定向到文件（或 `set -o pipefail`）。
+
+### 2. 本机测试/lint 有既有浮动基线，不要因此卡发布
+
+- `pnpm run test`（Windows）实测 **761 通过 / 11 失败**：7 个是上游 `move-image-to-folder.spec.ts` 硬编码 `'assets/'` 前缀断言（win32 下 `path.relative` 产出反斜杠）——POSIX 专用 spec；4 个是 `pdf.spec.ts` 在整包并发下的 5s 超时（隔离重跑即通过，数量浮动）
+- 判定"是不是本次改动引入的"：`git diff <上一个 tag>..HEAD -- <相关测试文件>` 为空 ⇒ 不可能影响该子系统；或重跑看失败数量是否浮动
+
+确认是基线后**向用户报告、由用户决定是否继续**，并把实测数字写进 release notes 的「已知问题」（不要照抄上一版的旧数字）。
+
+### 3. 发布前不要跑 `pnpm install`
+
+依赖没变时不要跑：本仓库 `postinstall` 会跑 electron-rebuild，而 native-keymap 的 Spectre 修复目前只存在于 `node_modules` 里（**尚未写进 `packages/desktop/patches/`**），`pnpm install` 会重置它 → `MSB8040` 失败（pitfalls #2）。只想验证 lockfile 一致性就用 `pnpm install --frozen-lockfile --ignore-scripts`。
 
 ## 版本号规范
 
