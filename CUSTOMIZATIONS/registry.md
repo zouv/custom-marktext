@@ -77,6 +77,18 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 
 ## 变更日志
 
+### 2026-09-15 - CUSTOM-20260915-005（gh CLI 接入 + 仓库解析陷阱）
+
+- **功能**：gh CLI 安装登录后的使用规范；修掉一个「gh 命令会打到上游仓库」的严重陷阱
+- **改动文件**：.agents/skills/marktext-release/SKILL.md（「GitHub 认证」章节改写为双路说明）；本地 git 配置 `remote.origin.gh-resolved=base`（只写 .git/config，不随仓库分发，无需提交）
+- **详细说明**：
+  - gh 已安装（winget，2.100.0，位于 `C:\Program Files\GitHub CLI`）并完成 `gh auth login`（账号 zouv，凭据存 keyring，scopes: gist / read:org / repo / workflow）。**不在 PATH 里**，用前需 `export PATH="$PATH:/c/Program Files/GitHub CLI"`
+  - **陷阱**：本仓库有 `origin`(zouv/custom-marktext) 与 `upstream`(marktext/marktext) 两个 remote，gh 解析到的是 **marktext/marktext（上游）**——不加 `--repo` 的 gh 命令会操作上游仓库（`gh release list` 列出的是上游的 release 即为实证）。修复：`git config remote.origin.gh-resolved base`
+  - 分工：**自动化发布仍走 GCM token**（`publish-release.mjs`，不依赖 gh 是否登录、也不受上述陷阱影响）；**人工排查走 gh**，且先用 `gh repo view --json nameWithOwner` 确认仓库
+  - `gh auth setup-git` 已执行，git push 也可走 gh 凭据
+- **验证方式**：设置 gh-resolved 后 `gh repo view --json nameWithOwner` → `zouv/custom-marktext`；`gh release view v0.20.0-custom.2` 正常返回（24 资产全部 uploaded / draft=false / prerelease=true / 正文为本版 notes）
+- **基于上游版本**：develop@1d3025b2
+
 ### 2026-09-15 - CUSTOM-20260915-004（v0.20.0-custom.2 发布结果核对）
 
 - **功能**：记录 v0.20.0-custom.2 的实际发布结果与操作教训
