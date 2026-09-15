@@ -204,6 +204,14 @@ pnpm run test > /tmp/t.log 2>&1   # ✅ 重定向到文件，再 grep / Read
 
 依赖没变时不要跑：本仓库 `postinstall` 会跑 electron-rebuild，而 native-keymap 的 Spectre 修复目前只存在于 `node_modules` 里（**尚未写进 `packages/desktop/patches/`**），`pnpm install` 会重置它 → `MSB8040` 失败（pitfalls #2）。只想验证 lockfile 一致性就用 `pnpm install --frozen-lockfile --ignore-scripts`。
 
+### 4. 轮询 CI 要用 token；改正文要等 CI **整体跑完**
+
+匿名访问 GitHub API 限流 **60 次/小时**。本次发布用匿名 curl 每 45s 轮询 Actions 状态，约 20 分钟就耗尽额度，之后持续报 `parse-error`（真相是 403 限流），而 CI 其实早已 success——差点误判成"CI 卡住"。
+
+- `publish-release.mjs` 内部用的是 GCM token（5000 次/小时），不受此限流影响；自己写轮询脚本时也要带 token，或干脆隔几分钟查一次
+- **顺序要求**：`--body-only` 必须等 **CI 工作流整体 `completed`** 之后再跑，不能只等 release 出现——CI 是「先建 draft 写入模板正文 → 再提升为 published」，中途 PATCH 有被覆盖的风险
+- `--prerelease` 要显式传：PATCH 会一并更新 `prerelease` 字段，漏传会把 CI 设好的预发布标记改成 `false`
+
 ## 版本号规范
 
 ```
