@@ -44,14 +44,20 @@ pnpm --version   # >= 10
 
 ### 3. GitHub 认证
 
-**本机没有 gh CLI，也不需要它**：Git Credential Manager 里已存有可用 token（scopes 含 `repo`），`CUSTOMIZATIONS/scripts/publish-release.mjs` 已封装取用逻辑（`git credential fill`；token 只在运行时读取、不落盘、不回显）。
+两条路都可用：**自动化脚本走 GCM token，人工排查走 gh CLI**。
+
+**a) GCM token（`publish-release.mjs` 内部使用）** —— Git Credential Manager 里存有可用 token（scopes 含 `repo`），脚本用 `git credential fill` 读取，只在运行时读取、不落盘、不回显。与 gh 是否登录无关。
 
 ```bash
 # 自查：能打印出用户名即说明凭证可用（不会打印 token 本身）
 printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | sed -n 's/^username=//p'
 ```
 
-只有确实没有凭证时，才考虑 `winget install GitHub.cli` + `gh auth login`。
+**b) gh CLI** —— 2026-09-15 已安装（`C:\Program Files\GitHub CLI`，**不在 PATH 里**，用前先 `export PATH="$PATH:/c/Program Files/GitHub CLI"`）并 `gh auth login` 完成（账号 zouv，凭据存 keyring，scopes 含 `repo`/`workflow`）。
+
+> ⚠️ **陷阱：gh 在本仓库默认解析到上游 `marktext/marktext`，而不是 `zouv/custom-marktext`** —— 本仓库有 `origin` + `upstream` 两个 remote，gh 挑中了 upstream。**不加 `--repo` 的 gh 命令会打到上游仓库去**（`gh release list` 列出的是上游的 release），发布类操作前务必先确认：`gh repo view --json nameWithOwner --jq .nameWithOwner`。
+>
+> 一次性修好：`git config remote.origin.gh-resolved base`。这只写本地 `.git/config`、**不随仓库分发**，新 clone 要重设一次（不设的话脚本不受影响，只有 gh 命令会走错仓库）。
 
 ### 4. 发布路径二选一（重要，见 pitfalls #7）
 
