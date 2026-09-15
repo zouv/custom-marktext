@@ -79,5 +79,22 @@
      - A（推荐）：不本地打包传资产，直接用 CI 构建的全平台 23 资产，只需 CI 完成后用我们的 release notes **PATCH release body**；
      - B：完全本地发布——推 tag 前把 release.yml 的 trigger 改为 `workflow_dispatch`（CUSTOM 标记 + registry 登记），本地传资产。
   2. **发完最后一步必做核对**：`GET /repos/zouv/custom-marktext/releases/tags/<tag>` 检查 assets 列表与 body，CI 覆盖正文后需要 PATCH 修正。
+  3. **已自动化（2026-09-15 移植 chatbox 方案）**：`node CUSTOMIZATIONS/scripts/publish-release.mjs <tag> --body-only --wait 1800`——等 CI 建好 release 后自动把正文改回 `CUSTOMIZATIONS/release-notes/<tag>.md`，并打印远端资产清单核对；脚本幂等可重跑。本机无 gh CLI 不是障碍：token 从 Git Credential Manager 取（`git credential fill`），不需装 gh、不需登录。
 - **教训**：基于上游建自定义仓库时，发布前先看 `.github/workflows/` 有无 `on: push: tags` 的 release 工作流——CI 会"抢发布"（构建、传资产、改正文）。资产大小/哈希核对是发现"同名文件不同构建"的唯一手段；GitHub 首页侧栏不显示 release entry ≠ release 不存在（prerelease 照样不显示，需点进 Releases 页确认）。
 - **验证**：`GET /releases/tags/v0.20.0-custom.1` → 23 资产全部 `uploaded`，body 已 PATCH 回我们的完整 release notes。
+
+## 8. `prettier --write` 与 ESLint 的 `space-before-function-paren` 互斥 —— 改上游文件时被静默改写
+
+- **日期**：2026-09-15（发布 v0.20.0-custom.2 前跑 lint 时发现）
+- **现象**：`pnpm run lint` 报 5 个 error，全在 `packages/desktop/src/renderer/src/components/editorWithTabs/editor.vue`，规则 `@stylistic/space-before-function-paren`（"Missing space before function parentheses"），落在 `constructor(container: ...)` / `_init(url)` / `_updateTransform()` / `_bindEvents()` / `destroy()`。诡异之处：**这些行与上游逐字节相同**，且 v0.20.0-custom.1 就是这样发出去的（上一轮把它当作"既有基线"，stash 对照后放行）。
+- **根因**：两条工具链对同一件事要求相反 ——
+  1. 本仓库 ESLint 要求函数名与括号间**有空格**（`constructor (`，neostandard 风格）；
+  2. 根 `.prettierrc.yaml` 无对应开关，Prettier 固定输出**无空格**（`constructor(`），且 `.prettierignore` 只排除了 `packages/muya/`；
+  3. 根 `package.json` 的 lint-staged 钩子顺序是 `["eslint --fix", "prettier --write"]`——**prettier 在后面跑，把 eslint --fix 刚补上的空格又抹掉**。
+     CUSTOM-20260904-004 改 editor.vue 时触发了这条链，于是把整个文件的函数声明风格翻了个面（template 属性换行、watch 展开同理）。
+- **解法**：`git checkout upstream/develop -- <该文件>` 恢复上游版本，再按 `[CUSTOM-BEGIN]` 标记把自定义块贴回去。lint 5 error → **0 error**，且该文件与上游的 diff 收敛为仅 3 个标记块。**不要只手工补那几处空格**——下次 `pnpm run format` 或任何预提交钩子会再次抹掉。
+- **教训**：
+  - 改完上游文件后，`git diff upstream/develop -- <file>` **应只剩下 `[CUSTOM-BEGIN]` 块**；出现标记块之外的格式差异就是被 prettier 误伤的信号，当场清掉，否则每轮合并都累积噪声；
+  - `lint.yml` 只在 `pull_request` 触发，custom/main 的提交不受 CI 卡关，这类 error 会静默累积 —— **本地 `pnpm run lint` 是唯一防线**，"上次发布也有"不等于"应该放过"；
+  - lint-staged 的顺序冲突是上游遗留，暂不动，但改上游文件时要有预期。
+- **验证**：修复后 `pnpm run lint` → `0 errors, 149 warnings`（warnings 为上游既有非空断言类提示，不阻塞）；`git diff upstream/develop HEAD -- editor.vue` 仅 3 个 CUSTOM-20260904-004 块。

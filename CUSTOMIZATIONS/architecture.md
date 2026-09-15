@@ -159,13 +159,14 @@ packages/muya/src/
 
 ### 2.9 打包/发布
 
-| 我要改的东西 | 关键锚点                                                   | 备注                                                                                                                                               |
-| ------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 打包配置     | `packages/desktop/electron-builder.yml`                    | 输出目录 `../../dist`（仓库根 dist/）；产物名 `marktext-win-${arch}-${version}-setup.exe` 等 artifactName 模板                                     |
-| 构建脚本     | 根 `package.json`（build:win/mac/linux → filter marktext） | 平台脚本自动含 minify-locales + electron-rebuild                                                                                                   |
-| 本地打包入口 | `sh CUSTOMIZATIONS/scripts/manager.sh unpacked\|setup`     | bat 透传 electron-builder `--projectDir packages\desktop`（**不能用 `-C`**，见 pitfalls #5）；内置杀软退避重试（chatbox CUSTOM-20260903-009 经验） |
-| 原生模块     | `pnpm run rebuild-native`（electron-rebuild -f）           | 改 Electron 版本后必跑；Spectre 编译坑见 pitfalls #2                                                                                               |
-| CI           | `.github/workflows/{build,release,test,…}.yml`             | 上游 CI：PR→develop                                                                                                                                |
+| 我要改的东西  | 关键锚点                                                                    | 备注                                                                                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 打包配置      | `packages/desktop/electron-builder.yml`                                     | 输出目录 `../../dist`（仓库根 dist/）；产物名 `marktext-win-${arch}-${version}-setup.exe` 等 artifactName 模板                                                                        |
+| 构建脚本      | 根 `package.json`（build:win/mac/linux → filter marktext）                  | 平台脚本自动含 minify-locales + electron-rebuild                                                                                                                                      |
+| 本地打包入口  | `sh CUSTOMIZATIONS/scripts/manager.sh unpacked\|setup`                      | bat 透传 electron-builder `--projectDir packages\desktop`（**不能用 `-C`**，见 pitfalls #5）；内置杀软退避重试（chatbox CUSTOM-20260903-009 经验）                                    |
+| 原生模块      | `pnpm run rebuild-native`（electron-rebuild -f）                            | 改 Electron 版本后必跑；Spectre 编译坑见 pitfalls #2                                                                                                                                  |
+| 发布到 GitHub | `node CUSTOMIZATIONS/scripts/publish-release.mjs <版本> --body-only --wait` | 本机无 gh CLI：脚本从 Git Credential Manager 取 token 走 REST API（不落盘）；**推 tag 会触发 release.yml 全平台构建并覆盖 release 正文**，故构建完必须改回我们的 notes（pitfalls #7） |
+| CI            | `.github/workflows/{build,release,test,…}.yml`                              | 上游 CI：PR→develop；`release.yml` 是 `on: push: tags: v*` —— 推 tag 即触发 Windows/macOS/Linux 全平台构建并发布（会"抢发布"）                                                        |
 
 ---
 
