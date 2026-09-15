@@ -92,9 +92,13 @@
   2. 根 `.prettierrc.yaml` 无对应开关，Prettier 固定输出**无空格**（`constructor(`），且 `.prettierignore` 只排除了 `packages/muya/`；
   3. 根 `package.json` 的 lint-staged 钩子顺序是 `["eslint --fix", "prettier --write"]`——**prettier 在后面跑，把 eslint --fix 刚补上的空格又抹掉**。
      CUSTOM-20260904-004 改 editor.vue 时触发了这条链，于是把整个文件的函数声明风格翻了个面（template 属性换行、watch 展开同理）。
-- **解法**：`git checkout upstream/develop -- <该文件>` 恢复上游版本，再按 `[CUSTOM-BEGIN]` 标记把自定义块贴回去。lint 5 error → **0 error**，且该文件与上游的 diff 收敛为仅 3 个标记块。**不要只手工补那几处空格**——下次 `pnpm run format` 或任何预提交钩子会再次抹掉。
+- **解法（两步，缺一不可）**：
+  1. **先修工具链**（否则下一步立不住）：根 `package.json` 的 lint-staged 把 `packages/desktop/src/**/*.{ts,vue}` 与 `packages/desktop/test/**/*.ts` 的 `prettier --write` 去掉（`eslint --fix` 成为源码唯一格式化者）；`.prettierignore` 加同两个 glob，连同 `pnpm run format` 一起挡住。json/md/yaml 的 prettier 保持不变。
+  2. **再修文件**：`git checkout upstream/develop -- <该文件>` 恢复上游版本，按 `[CUSTOM-BEGIN]` 标记把自定义块贴回去。该文件与上游 diff 收敛为仅 3 个标记块。**不要只手工补那几处空格**。
+- **踩坑实证（本次真实发生）**：第一次只做了第 2 步、直接提交——**pre-commit 钩子当场把修复抹掉**，5 个 error 原样复现，`git show HEAD:<file>` 里仍是 `constructor(`。凡"改文件内容就能修好"的判断，在这个仓库都要先问一句：谁会再把它改回去？
 - **教训**：
   - 改完上游文件后，`git diff upstream/develop -- <file>` **应只剩下 `[CUSTOM-BEGIN]` 块**；出现标记块之外的格式差异就是被 prettier 误伤的信号，当场清掉，否则每轮合并都累积噪声；
+  - **修复要落在"下一次由谁改写"这一层**：本仓库源码格式的权威是 ESLint（`@stylistic/*`），Prettier 在源码上是冗余且互斥的，仅保留给 json/md/yaml；
   - `lint.yml` 只在 `pull_request` 触发，custom/main 的提交不受 CI 卡关，这类 error 会静默累积 —— **本地 `pnpm run lint` 是唯一防线**，"上次发布也有"不等于"应该放过"；
-  - lint-staged 的顺序冲突是上游遗留，暂不动，但改上游文件时要有预期。
-- **验证**：修复后 `pnpm run lint` → `0 errors, 149 warnings`（warnings 为上游既有非空断言类提示，不阻塞）；`git diff upstream/develop HEAD -- editor.vue` 仅 3 个 CUSTOM-20260904-004 块。
+  - **提交后要复验产物内容**（`git show HEAD:<file>`），不能只看提交前的 lint 结果——钩子会在提交时改写暂存内容。
+- **验证**：修复后 `pnpm run lint` → `0 errors, 149 warnings`（warnings 为上游既有非空断言类提示，不阻塞）；提交后 `git show HEAD:editor.vue` 仍是上游格式、`git diff upstream/develop HEAD -- editor.vue` 仅 3 个 CUSTOM-20260904-004 块。
