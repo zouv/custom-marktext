@@ -78,11 +78,12 @@ pnpm -C packages/muya test:spec     # CommonMark/GFM 规范基线
 
 Skill 定义位于 `.agents/skills/`（跨工具共享的工作区级标准路径；上游 `.gitignore` 忽略该目录，本仓库已反向豁免，见 pitfalls #1）。
 
-| Skill                     | 何时调用                                  |
-| ------------------------- | ----------------------------------------- |
-| `marktext-record-change`  | 完成任何自定义功能/修改后                 |
-| `marktext-merge-upstream` | 用户要求合并上游/升级版本/同步原仓库时    |
-| `marktext-release`        | 用户要求打包/发布/打 release/生成安装包时 |
+| Skill                     | 何时调用                                                                |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `marktext-record-change`  | 完成任何自定义功能/修改后                                               |
+| `marktext-merge-upstream` | 用户要求合并上游/升级版本/同步原仓库时                                  |
+| `marktext-release`        | 用户要求打包/生成安装包/build 时（本地打包，路径 B）                    |
+| `marktext-publish`        | 用户要求发布/上传 release/打 tag/推 release 到 GitHub 时（路径 A 默认） |
 
 详细触发场景见各 skill 的 `.agents/skills/<name>/SKILL.md`。
 
@@ -102,7 +103,7 @@ CUSTOMIZATIONS/             # 自定义开发内容（规则、账本、代码�
 ├── docs/pitfalls.md        # 历史坑点沉淀
 ├── release-notes/
 ├── src/ patches/ scripts/
-.agents/skills/             # AI Agent 项目级 skills（3 个）
+.agents/skills/             # AI Agent 项目级 skills（4 个）
 CLAUDE.md                   # 上游维护的架构文档（勿改）
 ```
 
