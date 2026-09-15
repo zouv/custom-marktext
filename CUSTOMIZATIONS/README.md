@@ -21,10 +21,10 @@ CUSTOMIZATIONS/
 
 ## registry.md 的两层结构
 
-| 层 | 组织方式 | 回答什么 | 更新方式 |
-|---|---|---|---|
+| 层           | 组织方式                           | 回答什么                           | 更新方式                            |
+| ------------ | ---------------------------------- | ---------------------------------- | ----------------------------------- |
 | **改动总览** | 按文件（一文件一节，多轮演进合并） | "这个文件现在改了什么？冲突策略？" | 已有该文件就更新该节，演进链追加 id |
-| **变更日志** | 按次（时间倒序 append-only） | "何时/为何/怎么验证" | 顶部追加，永不改写历史 |
+| **变更日志** | 按次（时间倒序 append-only）       | "何时/为何/怎么验证"               | 顶部追加，永不改写历史              |
 
 总览与代码 `[CUSTOM-BEGIN]` 标记一一对应（同一文件的"当前状态"镜像），`sh CUSTOMIZATIONS/scripts/check-registry.sh` 做双向一致性自检——**每次登记后必须跑到全绿**。
 
@@ -57,15 +57,15 @@ Vue 单文件组件（`.vue`）中标记注释写在 `<template>` / `<script>` �
 
 合并上游时，对冲突文件按以下策略处理（按优先级从高到低）：
 
-| 优先级 | 条件 | 策略 |
-|--------|------|------|
-| 1 | 文件在 `CUSTOMIZATIONS/src/` 目录下 | `keep-ours`（保留我们的） |
-| 2 | 文件在 `CUSTOMIZATIONS/patches/` 目录下 | `keep-ours` |
-| 3 | registry.md 条目标记 `keep-ours` | `keep-ours` |
-| 4 | registry.md 条目标记 `keep-theirs` | `keep-theirs`（使用上游的） |
-| 5 | 文件是 `pnpm-lock.yaml` | 接受上游版本后 `pnpm install` 重新生成 |
-| 6 | 文件包含 `[CUSTOM-BEGIN]` 标记 | `merge-manual`（按标记块保留自定义代码） |
-| 7 | 其他文件 | `merge-manual`（AI 分析后合并） |
+| 优先级 | 条件                                    | 策略                                     |
+| ------ | --------------------------------------- | ---------------------------------------- |
+| 1      | 文件在 `CUSTOMIZATIONS/src/` 目录下     | `keep-ours`（保留我们的）                |
+| 2      | 文件在 `CUSTOMIZATIONS/patches/` 目录下 | `keep-ours`                              |
+| 3      | registry.md 条目标记 `keep-ours`        | `keep-ours`                              |
+| 4      | registry.md 条目标记 `keep-theirs`      | `keep-theirs`（使用上游的）              |
+| 5      | 文件是 `pnpm-lock.yaml`                 | 接受上游版本后 `pnpm install` 重新生成   |
+| 6      | 文件包含 `[CUSTOM-BEGIN]` 标记          | `merge-manual`（按标记块保留自定义代码） |
+| 7      | 其他文件                                | `merge-manual`（AI 分析后合并）          |
 
 - `keep-ours`：始终保留自定义版本，上游改动放弃
 - `keep-theirs`：始终使用上游版本，自定义改动放弃
@@ -86,14 +86,14 @@ Vue 单文件组件（`.vue`）中标记注释写在 `<template>` / `<script>` �
 
 ## registry.md frontmatter 字段职责
 
-| 字段 | 更新时机 | 负责方 |
-|---|---|---|
-| `current_upstream_version` / `current_upstream_commit` | 上游合并后 | marktext-merge-upstream |
-| `vendor_branch` | 上游合并后（跨版本线时） | marktext-merge-upstream |
-| `last_merge_date` | 上游合并后 | marktext-merge-upstream |
-| `last_release_version` / `last_release_date` | 发布后 | marktext-release |
-| `custom_version` | 发布后 | marktext-release |
-| `upstream_remote` | 首次 clone 初始化 | init-repo.ps1 |
+| 字段                                                   | 更新时机                 | 负责方                  |
+| ------------------------------------------------------ | ------------------------ | ----------------------- |
+| `current_upstream_version` / `current_upstream_commit` | 上游合并后               | marktext-merge-upstream |
+| `vendor_branch`                                        | 上游合并后（跨版本线时） | marktext-merge-upstream |
+| `last_merge_date`                                      | 上游合并后               | marktext-merge-upstream |
+| `last_release_version` / `last_release_date`           | 发布后                   | marktext-publish        |
+| `custom_version`                                       | 发布后                   | marktext-publish        |
+| `upstream_remote`                                      | 首次 clone 初始化        | init-repo.ps1           |
 
 ## 辅助脚本
 
@@ -126,10 +126,10 @@ sh ./CUSTOMIZATIONS/scripts/check-registry.sh
 
 marktext 上游开发在 **`develop`** 分支（PR 目标分支，非 master），发布走 `release/vX.Y.0` 分支 + tag。因此：
 
-| 分支 | 用途 | 对应上游 |
-|---|---|---|
-| `vendor/develop` | 跟踪上游 develop（当前基线） | upstream/develop |
-| `vendor/vX.Y.x` | 跟踪上游版本线（合并 tag 时用） | release/vX.Y.0 或 tag |
-| `custom/main` | 自定义开发主分支 | 基于 vendor 分支演进 |
+| 分支             | 用途                            | 对应上游              |
+| ---------------- | ------------------------------- | --------------------- |
+| `vendor/develop` | 跟踪上游 develop（当前基线）    | upstream/develop      |
+| `vendor/vX.Y.x`  | 跟踪上游版本线（合并 tag 时用） | release/vX.Y.0 或 tag |
+| `custom/main`    | 自定义开发主分支                | 基于 vendor 分支演进  |
 
 基线采用 **commit 跟踪**（默认跟随 upstream/develop 最新；也可用 tag 精确锚定），registry.md 的 `current_upstream_version` 记录 tag 或 `develop@<short-hash>`。

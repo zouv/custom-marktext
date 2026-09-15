@@ -182,7 +182,7 @@ marktext-custom — manager.sh
 
 说明：
   - unpacked/setup 会自动：检查/安装 7za shim、结束运行中的 MarkText.exe。
-  - 正式发布（GitHub Release、版本号管理）请用 marktext-release skill，
+  - 正式发布（GitHub Release、版本号管理）请用 marktext-publish skill，
     本脚本只负责本地打包。
 EOF
 }
