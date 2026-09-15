@@ -2,3 +2,13 @@
 # @stylistic: 4-space indent + semicolons), which differs from the root Prettier
 # style (2-space, no semi). Skip it so `pnpm format` doesn't fight muya's own lint.
 packages/muya/
+
+# [CUSTOM-BEGIN] CUSTOM-20260915-001
+# Same conflict, opposite direction: the root ESLint config formats these files via
+# its @stylistic/* rules, and its `space-before-function-paren` requires a space
+# (`constructor (`) that Prettier's default always strips. Letting Prettier touch them
+# silently breaks `pnpm lint` and re-formats upstream files merged in ESLint style —
+# see CUSTOMIZATIONS/docs/pitfalls.md #8.
+packages/desktop/src/**/*.{ts,vue}
+packages/desktop/test/**/*.ts
+# [CUSTOM-END] CUSTOM-20260915-001
