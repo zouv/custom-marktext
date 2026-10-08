@@ -15,7 +15,8 @@ import type {
   IpcSendChannels,
   IpcSyncChannels,
   IpcMainEventChannels,
-  BootInfo
+  BootInfo,
+  SaveDialogRequest
 } from '@shared/types/ipc'
 
 type RendererEventListener<K extends keyof IpcMainEventChannels> = (
@@ -76,7 +77,8 @@ const shellAPI = {
 const clipboardAPI = {
   writeText: (text: string) => send('mt::clipboard::write-text', text),
   readText: () => invoke('mt::clipboard::read-text'),
-  guessFilePath: () => invoke('mt::clipboard::guess-file-path')
+  guessFilePath: () => invoke('mt::clipboard::guess-file-path'),
+  writeImage: (png: Uint8Array) => invoke('mt::clipboard::write-image', png)
 }
 
 const webFrameAPI = {
@@ -160,6 +162,8 @@ const fileUtilsAPI = {
   isDirectory: (p: string) => invoke('mt::fs::is-directory', p),
   emptyDir: (p: string) => invoke('mt::fs::empty-dir', p),
   copy: (src: string, dest: string) => invoke('mt::fs::copy', src, dest),
+  copyWithContentHash: (src: string, outputDir: string) =>
+    invoke('mt::fs::copy-with-content-hash', src, outputDir),
   ensureDir: (p: string) => invoke('mt::fs::ensure-dir', p),
   outputFile: (p: string, data: string | Uint8Array) => invoke('mt::fs::output-file', p, data),
   move: (src: string, dest: string) => invoke('mt::fs::move', src, dest),
@@ -226,6 +230,15 @@ const fontsAPI = {
   list: () => invoke('mt::fonts::list')
 }
 
+const dialogAPI = {
+  showSave: (request: SaveDialogRequest) => invoke('mt::dialog::show-save', request)
+}
+
+const diagramAPI = {
+  fetchPlantuml: (server: string, encoded: string, format: 'svg' | 'png') =>
+    invoke('mt::diagram::fetch-plantuml', server, encoded, format)
+}
+
 const electronAPI = {
   ipcRenderer: ipcWrapper,
   shell: shellAPI,
@@ -242,7 +255,8 @@ const electronAPI = {
   },
   paths: bootInfo?.paths || {},
   isUpdatable: !!bootInfo?.isUpdatable,
-  windowControl: windowControlAPI
+  windowControl: windowControlAPI,
+  dialog: dialogAPI
 }
 
 // Expose a Node-`path`-compatible API to the renderer. `pathe` is a
@@ -294,6 +308,7 @@ try {
   contextBridge.exposeInMainWorld('ripgrep', ripgrepAPI)
   contextBridge.exposeInMainWorld('uploader', uploaderAPI)
   contextBridge.exposeInMainWorld('fonts', fontsAPI)
+  contextBridge.exposeInMainWorld('diagram', diagramAPI)
 } catch (error) {
   console.error(error)
 }

@@ -3,7 +3,10 @@
     "counter": {
       "words": "Woorden",
       "characters": "Tekens",
-      "paragraphs": "Alinea's"
+      "paragraphs": "Alinea's",
+      "allCharacters": "Alle tekens",
+      "document": "Document",
+      "documentSelection": "Document / Selectie"
     },
     "file": {
       "file": "Bestand",
@@ -21,6 +24,7 @@
       "export": "Exporteren",
       "exportHtml": "Exporteren als HTML",
       "exportPdf": "Exporteren als PDF",
+      "convertWithPandoc": "Converteren met Pandoc",
       "import": "Importeren",
       "print": "Afdrukken",
       "closeTab": "Tabblad sluiten",
@@ -80,10 +84,10 @@
       "minimize": "Minimaliseren",
       "zoomIn": "Inzoomen",
       "zoomOut": "Uitzoomen",
+      "resetZoom": "Zoom herstellen",
       "fullScreen": "Volledig scherm",
       "bringAllToFront": "Alles naar voren",
-      "alwaysOnTop": "Altijd bovenaan",
-      "resetZoom": "Zoom herstellen"
+      "alwaysOnTop": "Altijd bovenaan"
     },
     "help": {
       "help": "Help",
@@ -185,6 +189,7 @@
     "copyAsRich": "Kopiëren als opgemaakte tekst",
     "copyAsHtml": "Kopiëren als HTML",
     "pasteAsPlainText": "Plakken als platte tekst",
+    "lookUp": "\"{selection}\" opzoeken",
     "insertParagraphBefore": "Alinea invoegen vóór",
     "insertParagraphAfter": "Alinea invoegen na",
     "spelling": "Spelling...",
@@ -396,6 +401,7 @@
         "codeFontSize": "Lettergrootte in codeblokken (12-18)",
         "codeFontFamily": "Lettertype voor codeblokken",
         "codeBlockLineNumbers": "Regelnummers tonen",
+        "sourceCodeLineNumbers": "Regelnummers tonen in broncodeweergave",
         "trimUnnecessaryCodeBlockEmptyLines": "Lege regels aan begin en einde van codeblokken verwijderen",
         "autoPairBracket": "Automatisch haakjes aanvullen bij bewerken",
         "autoPairMarkdownSyntax": "Markdown-syntax automatisch aanvullen",
@@ -417,8 +423,12 @@
         "frontmatterType": "Het type Front Matter",
         "superSubScript": "Pandoc superscript en subscript inschakelen",
         "footnote": "Pandoc voetnoten inschakelen",
+        "texMathDollars": "Pandocs markdown-extensie tex_math_dollars inschakelen",
+        "texMathGfm": "Pandocs markdown-extensie tex_math_gfm inschakelen",
+        "texMathSingleBackslash": "Pandocs markdown-extensie tex_math_single_backslash inschakelen",
+        "texMathDoubleBackslash": "Pandocs markdown-extensie tex_math_double_backslash inschakelen",
         "isHtmlEnabled": "HTML-weergave inschakelen",
-        "isGitlabCompatibilityEnabled": "GitLab-compatibiliteitsmodus inschakelen",
+        "softNewlineAsSpace": "Zachte regeleinden als spaties behandelen",
         "sequenceTheme": "Sequentiediagram thema",
         "plantumlServer": "PlantUML server-URL",
         "theme": "Selecteer het thema voor MarkText",
@@ -512,7 +522,8 @@
           "korean": "한국어",
           "dutch": "Nederlands",
           "portuguese": "Português",
-          "turkish": "Türkçe"
+          "turkish": "Türkçe",
+          "russian": "Русский"
         }
       }
     },
@@ -524,7 +535,8 @@
         "lineHeight": "Regelhoogte",
         "fontFamily": "Lettertypefamilie",
         "maxWidth": "Maximale breedte",
-        "maxWidthNotes": "Maximale breedte van editorinhoud"
+        "maxWidthNotes": "Maximale breedte van editorinhoud. Voer een getal in gevolgd door px, ch (tekens) of %, bijvoorbeeld 800px, 80ch of 60%. Laat leeg om de standaardbreedte te gebruiken.",
+        "maxWidthInvalid": "Voer een getal in gevolgd door px, ch of %, bijvoorbeeld 800px."
       },
       "codeBlock": {
         "title": "Codeblok",
@@ -569,7 +581,8 @@
         "hideLinkPopup": "Link-popup verbergen",
         "autoCheck": "Automatisch aanvinken",
         "autoNormalizeLineEndings": "Regeleindes automatisch normaliseren naar LF bij openen",
-        "wrapCodeBlocks": "Codeblokken terugloopbaar"
+        "wrapCodeBlocks": "Codeblokken terugloopbaar",
+        "sourceCodeLineNumbers": "Regelnummers tonen in broncodeweergave"
       }
     },
     "image": {
@@ -639,6 +652,10 @@
         "superSubScript": "Super-/subscript",
         "footnote": "Voetnoot",
         "footnoteNotes": "Voetnoten",
+        "texMathDollars": "TeX-wiskunde met $ en $$",
+        "texMathGfm": "GitHub TeX-wiskunde ($`…`$ en ```math)",
+        "texMathSingleBackslash": "TeX-wiskunde met enkele backslash",
+        "texMathDoubleBackslash": "TeX-wiskunde met dubbele backslash",
         "frontmatterType": {
           "jsonBrace": "JSON met accolades",
           "jsonSemicolon": "JSON met puntkomma",
@@ -665,8 +682,8 @@
         "title": "Diversen"
       },
       "compatibility": {
-        "enableGitlab": "GitLab-compatibiliteit inschakelen",
         "enableHtml": "HTML-ondersteuning inschakelen",
+        "softNewlineAsSpace": "Zachte regeleinden als spaties behandelen",
         "title": "Compatibiliteit"
       },
       "lists": {
@@ -899,7 +916,9 @@
     "fileExists": "Bestand bestaat al: {filename}",
     "files": "Bestanden",
     "importWarning": "Importwaarschuwing",
-    "installPandoc": "Pandoc installeren",
+    "installPandoc": "Pandoc is niet gevonden. Installeer het, of stel de omgevingsvariabele MARKTEXT_PANDOC in op het pad naar het pandoc-programma en herstart MarkText.",
+    "exportWarning": "Exportwaarschuwing",
+    "exportWarningMore": "…en nog {count}",
     "keepOpen": "Open houden",
     "replace": "Vervangen",
     "save": "Opslaan",
@@ -939,6 +958,7 @@
       "errorWhileSaving": "Er is een fout opgetreden bij het opslaan: {msg}",
       "exportSuccessTitle": "Succesvol geëxporteerd",
       "exportSuccessMessage": "\"{name}\" is succesvol geëxporteerd!",
+      "exportLinkedMediaMessage": "\"{name}\" is geëxporteerd. Deze indeling verwijst naar afbeeldingen in plaats van ze in te sluiten — houd de afbeeldingen bij het bestand en deel de hele map.",
       "fileRemovedOnDisk": "\"{name}\" is verwijderd van schijf.",
       "fileChangedOnDisk": "\"{name}\" is gewijzigd op schijf. Wil je het opnieuw laden?"
     }
@@ -957,6 +977,21 @@
       "title": "Tabel invoegen",
       "rows": "Rijen",
       "columns": "Kolommen"
+    },
+    "mediaViewer": {
+      "title": "Voorbeeld",
+      "close": "Sluiten",
+      "zoomIn": "Inzoomen",
+      "zoomOut": "Uitzoomen",
+      "fit": "Passend maken",
+      "actualSize": "Werkelijke grootte",
+      "saveTitle": "Diagram opslaan",
+      "saveSvg": "Opslaan als SVG",
+      "savePng": "Opslaan als PNG",
+      "copyImage": "Afbeelding kopiëren",
+      "copied": "Afbeelding naar het klembord gekopieerd",
+      "saveFailed": "Kan de afbeelding niet opslaan: {error}",
+      "copyFailed": "Kan de afbeelding niet kopiëren: {error}"
     },
     "notifications": {
       "notificationNotFound": "Melding niet gevonden"
