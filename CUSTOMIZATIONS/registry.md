@@ -1,10 +1,10 @@
 ---
 current_upstream_version: 'v0.20.0'
 current_upstream_commit: '53226af919aa89e7b5e3b64aec18fa053967796f'
-custom_version: 'v0.20.0-custom.2'
+custom_version: 'v0.20.0-custom.3'
 last_merge_date: '2026-10-08'
-last_release_version: 'v0.20.0-custom.2'
-last_release_date: '2026-09-15'
+last_release_version: 'v0.20.0-custom.3'
+last_release_date: '2026-10-08'
 vendor_branch: 'vendor/v0.20.x'
 upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
@@ -70,13 +70,36 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 | packages/desktop/src/renderer/src/components/sideBar/index.vue                                                  | 20260909-001                         | 20260909-001                           | 右列面板区加 `currentDir` 第四分支（v-else-if）渲染 currentDir.vue（template + import 两处标记）                                                                                                                                                                                                                                                                                                                                                                                                                                                 | merge-manual                     | active |
 | packages/desktop/src/renderer/src/components/sideBar/help.ts                                                    | 20260909-001                         | 20260909-001                           | sideBarIcons 数组第 4 项：id `currentDir`、Element Plus Files 图标、i18n `sideBar.icons.currentDir`（点击经现有 handleLeftIconClick → SET_LAYOUT 切面板，无需改 store）                                                                                                                                                                                                                                                                                                                                                                          | merge-manual                     | active |
 | packages/desktop/static/locales/\*.json（12 语言）                                                              | （无标记，json 无法注释）            | 20260909-001                           | 新键 sideBar.currentDir.{title,refresh,loading,empty,noDirectory,readError,retry} + sideBar.icons.currentDir；同轮顺带补齐历史欠账：preferences.markdown.lists.preserveFormattingOnSave（004 漏 9 语言）、menu.window.resetZoom（上游 5185 漏 nl），locale parity 测试 35/35 全绿；20261008-001 合并 v0.20.0：语言数 11→12（上游新增 ru，本仓库为 ru 补自定义键俄语翻译，其余语言键位不变）；`menu.window.resetZoom` 上游已原生提供 → 该补齐项转 `merged-upstream`，本仓库行删除；locale 键位 parity 全绿（脚本核对 12 语言 ↔ en.json 完全一致） | merge-manual                     | active |
-| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/）                          | （纯自定义目录）                     | 20260904-001→002                       | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 脚本套件：init-repo/list-custom/sync-vendor/check-registry + manager.sh/build-unpacked.bat/build-setup.bat/7za-shim.\*/publish-release.mjs（本地打包 + 发布到 GitHub：electron-builder 用 --projectDir packages\desktop，产物在仓库根 dist/，产物名 marktext-win-x64-<版本>-setup.exe；publish-release.mjs 从 GCM 取 token 走 REST API，幂等，支持 --body-only --wait 等 CI 抢发布后改回正文）                                                                                          | keep-ours                        | active |
+| CUSTOMIZATIONS/（README.md、architecture.md、registry.md、docs/pitfalls.md、scripts/）                          | （纯自定义目录）                     | 20260904-001→002                       | 自定义机制（规则/账本）+ AI 协作文档（代码地图/坑点库）+ 脚本套件：init-repo/list-custom/sync-vendor/check-registry + manager.sh/build-unpacked.bat/build-setup.bat（20261008-002 修复打包重试的退避失效与部分产物不自清，见 pitfalls #11）/7za-shim.\*/publish-release.mjs（本地打包 + 发布到 GitHub：electron-builder 用 --projectDir packages\desktop，产物在仓库根 dist/，产物名 marktext-win-x64-<版本>-setup.exe；publish-release.mjs 从 GCM 取 token 走 REST API，幂等，支持 --body-only --wait 等 CI 抢发布后改回正文）                  | keep-ours                        | active |
 | AGENTS.md、.agents/skills/\*                                                                                    | （纯自定义文件）                     | 20260904-001                           | 会话级硬约束 + 工作流 + skills（merge-upstream/record-change/release/publish）；20261008-001 合并 v0.20.0：上游把 CLAUDE.md 重命名为 AGENTS.md 并刷新架构文档，本文件改为两段式——第一部分自定义硬约束/工作流/分支与代码规范（本仓库权威），第二部分上游架构与开发说明（勿改）；内部引用 CLAUDE.md／packages/muya/CLAUDE.md 改指 AGENTS.md／packages/muya/AGENTS.md                                                                                                                                                                               | keep-ours                        | active |
 | CLAUDE.md                                                                                                       | （纯自定义文件）                     | 20261008-001                           | 一行指路文件（正文仅 `@AGENTS.md`）：上游 v0.20.0 把 CLAUDE.md 重命名为 AGENTS.md，本仓库主动保留该文件作为 Claude Code 的自动加载入口（实测当前 Claude Code 只自动注入 CLAUDE.md，不注入 AGENTS.md），项目指令统一维护在 AGENTS.md                                                                                                                                                                                                                                                                                                              | keep-ours                        | active |
 
 ---
 
 ## 变更日志
+
+### 2026-10-08 - CUSTOM-20261008-003（发布 v0.20.0-custom.3）
+
+- **功能**：把合并上游 v0.20.0 后的基线发布为 **v0.20.0-custom.3**（路径 A：推 tag 由 CI 全平台构建 24 个资产，本地不打 setup 包）
+- **改动文件**：packages/desktop/package.json（version → 0.20.0-custom.3）、CUSTOMIZATIONS/registry.md（frontmatter + 本条目）、CUSTOMIZATIONS/release-notes/v0.20.0-custom.3.md（新增）
+- **详细说明**：
+  - **版本号**：`0.20.0-custom.2` → `0.20.0-custom.3`（首个以上游正式 tag 为基线的自定义版本）
+  - **frontmatter**：`custom_version` / `last_release_version` → `v0.20.0-custom.3`，`last_release_date` → `2026-10-08`
+  - **release notes**：基于上游 v0.20.0（正式 tag）、上游新功能汇总、自定义适配（保真回放迁移 + 俄语补齐）、打包脚本两处修复、已知问题含本机实测数字、24 个资产清单
+  - **发布性质**：沿用前两版的 Pre-release 标记（`--prerelease`）
+- **验证方式**：发布前检查 `pnpm install --frozen-lockfile --ignore-scripts` / `lint`（0 error，175 warning）/ `typecheck` / `test` / `build:unpack` 全部 exit 0，其中 `test` 有 6 个环境相关超时（见 release notes 已知问题，隔离重跑 21/21 全过）；推 tag 后等 CI 跑完，用 `publish-release.mjs --body-only --wait --prerelease` 改回正文；gh 交叉核验 tag/draft/prerelease/24 资产
+- **基于上游版本**：v0.20.0（53226af919aa89e7b5e3b64aec18fa053967796f）
+
+### 2026-10-08 - CUSTOM-20261008-002（修复打包脚本重试机制）
+
+- **功能**：修掉 `build-unpacked.bat` / `build-setup.bat` 抗杀软重试机制的两个独立缺陷——此前该机制在 Git Bash 下**完全失效**，导致打包连续 3 次同一秒内失败
+- **改动文件**：CUSTOMIZATIONS/scripts/build-unpacked.bat、CUSTOMIZATIONS/scripts/build-setup.bat、CUSTOMIZATIONS/docs/pitfalls.md（新增 #11）、CUSTOMIZATIONS/registry.md（语言数更正）
+- **详细说明**：
+  - **缺陷 1（退避失效）**：退避写成 `timeout /t 15`。bat 由 `manager.sh` 经 `cmd //c` 启动，而 Git Bash 的 PATH 上 `timeout` 解析到 GNU coreutils 版本，`/t` 非法 → 立即返回，**15s 等待变成 0s**，三次重试全落在杀软扫描窗口内。改用绝对路径 `"%SystemRoot%\System32\timeout.exe"` 并保留 `ping -n 16` 兜底（不依赖 PATH）
+  - **缺陷 2（重试不自清）**：失败的尝试会留下半成品 `dist\win-unpacked\`（及 `win-unpacked.tmp`），下一次尝试直接死在暂存目录改名（`EPERM`）。现于 `:PackageRun` 每次尝试前先清空二者。两个缺陷叠加的表现是三次重试**死法各不相同**（第 1 次 `open marktext.exe`、第 2/3 次 `rename`），只看表面现象容易误判成"杀软太凶"而放过脚本 bug
+  - 顺带更正 registry 中语言数（11 → 12，上游只新增 ru）
+- **验证方式**：修复前连挂 3 次 → 修复后重跑 `build-unpacked.bat --skip-build`，日志出现真实 15s 间隔与清理动作，`EXIT=0`、`[SUCCESS] unpacked build finished.`，产物 `dist/win-unpacked/marktext.exe` 的 `FileVersion = 0.20.0-custom.3`
+- **基于上游版本**：v0.20.0（53226af919aa89e7b5e3b64aec18fa053967796f）
 
 ### 2026-10-08 - CUSTOM-20261008-001（合并上游 v0.20.0 正式版）
 
