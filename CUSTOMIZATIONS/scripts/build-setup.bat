@@ -101,12 +101,21 @@ rem "Unable to commit changes". electron-builder's 3 quick retries fall
 rem inside the scan window, so retry the whole builder run with a backoff.
 set "EB_TRIES=0"
 :PackageRun
+rem A failed attempt leaves a partial win-unpacked\ (and its .tmp sibling)
+rem behind; without this the next attempt dies at the staging-dir rename with
+rem EPERM before it retries for real, so all three tries fail identically.
+if exist "dist\win-unpacked" rmdir /S /Q "dist\win-unpacked" >nul 2>&1
+if exist "dist\win-unpacked.tmp" rmdir /S /Q "dist\win-unpacked.tmp" >nul 2>&1
 call npx electron-builder build --publish never --win --x64 --projectDir packages\desktop %EXTRA_ARGS%
 if not errorlevel 1 goto :PackageDone
 set /a EB_TRIES+=1
 if %EB_TRIES% GEQ 3 goto :PackageFailed
 echo [WARN] electron-builder failed ^(try %EB_TRIES%/3^). Antivirus may be scanning the output; waiting 15s before retry...
-timeout /t 15 /nobreak >nul
+rem Absolute path, not bare `timeout`: when this script is launched from Git
+rem Bash, PATH resolves `timeout` to GNU coreutils' timeout, which rejects
+rem `/t` and returns immediately — the backoff collapses to zero and every
+rem retry lands inside the same antivirus scan window.
+"%SystemRoot%\System32\timeout.exe" /t 15 /nobreak >nul 2>&1 || ping -n 16 127.0.0.1 >nul
 goto :PackageRun
 :PackageDone
 
