@@ -27,4 +27,5 @@ playwright-report/
 !.agents/**
 .zcode/plans/
 .claude/explore-results/
+.codex/
 .agent/

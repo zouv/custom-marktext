@@ -31,8 +31,11 @@ export interface IMuyaOptions {
     spellcheckHideMarks: boolean;
     superSubScript: boolean;
     footnote: boolean;
-    math: boolean;
-    isGitlabCompatibilityEnabled: boolean;
+    texMathDollars: boolean;
+    texMathGfm: boolean;
+    texMathSingleBackslash: boolean;
+    texMathDoubleBackslash: boolean;
+    softNewlineAsSpace: boolean;
     autoMoveCheckedToEnd: boolean;
     disableHtml: boolean;
     // [CUSTOM-BEGIN] CUSTOM-20260904-004 - preserve original formatting of unchanged blocks on save

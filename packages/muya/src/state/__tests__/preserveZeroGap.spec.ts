@@ -10,8 +10,10 @@ import ExportMarkdown from '../stateToMarkdown';
 
 const PARSE_OPTIONS = {
     footnote: false,
-    math: true,
-    isGitlabCompatibilityEnabled: false,
+    texMathDollars: true,
+    texMathGfm: false,
+    texMathSingleBackslash: false,
+    texMathDoubleBackslash: false,
     trimUnnecessaryCodeBlockEmptyLines: false,
     frontMatter: true,
 };

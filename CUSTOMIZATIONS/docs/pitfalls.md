@@ -102,3 +102,32 @@
   - `lint.yml` 只在 `pull_request` 触发，custom/main 的提交不受 CI 卡关，这类 error 会静默累积 —— **本地 `pnpm run lint` 是唯一防线**，"上次发布也有"不等于"应该放过"；
   - **提交后要复验产物内容**（`git show HEAD:<file>`），不能只看提交前的 lint 结果——钩子会在提交时改写暂存内容。
 - **验证**：修复后 `pnpm run lint` → `0 errors, 149 warnings`（warnings 为上游既有非空断言类提示，不阻塞）；提交后 `git show HEAD:editor.vue` 仍是上游格式、`git diff upstream/develop HEAD -- editor.vue` 仅 3 个 CUSTOM-20260904-004 块。
+
+---
+
+## 9. 非 TTY 下 `pnpm install` 会静默中止清理 node_modules —— 退出码仍为 0
+
+- **日期**：2026-10-08（合并上游 v0.20.0 后验证依赖时发现）
+- **现象**：合并后跑 `pnpm install` 显示 `[exited with code 0]`，看着成功；但随后 desktop 单测大面积失败，`path-exclude-pattern.spec.ts` 报 `TypeError: minimatch is not a function`——上游 v0.20.0 新加的 desktop 依赖 `minimatch@^9.0.9` 根本没被链接（`packages/desktop/node_modules/` 里没有 minimatch，Node 回落到 .pnpm 里被提升的 `minimatch@3.1.5`，v3 无命名导出）。`packages/desktop/node_modules` 的 mtime 停留在合并前，说明那次 install 什么都没做。
+- **根因**：pnpm 检测到 lockfile 变化需要**清空并重建 `node_modules`**，但当前 shell 没有 TTY，于是抛 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` 并中止——**而进程退出码依然是 0**。任何只看退出码或只看末尾几行的自动化流程都会把它当成成功。
+  （背景：本仓库 pnpm 版本升级 / lockfile 大改时才会触发 purge；普通增量安装不会。）
+- **解法**：非交互环境一律显式带 `CI=true` 跑：`CI=true pnpm install`（或 `--config.confirmModulesPurge=false`）。判定成功不要只看退出码，还要看输出里没有 `ERR_PNPM_` 字样。
+- **教训**：
+  - **"exit code 0" 不等于"做完了"**：pnpm 的 TTY 保护会以 0 退出，是这个仓库最容易骗过自动验证的一环；
+  - 合并上游后 `pnpm install` 必须复核**新依赖是否真的落位**（`ls packages/desktop/node_modules | grep <新包>`，或直接跑一个用到它的 spec），否则后续 lint/typecheck/test 全都在旧依赖上跑，结论全部失真；
+  - 验证顺序有意为之：**先确认依赖，再谈 lint/单测**——依赖错了，其它绿灯都没有意义。
+- **验证**：`CI=true pnpm install` 后 `packages/desktop/node_modules/minimatch` 出现、`path-exclude-pattern.spec.ts` 由 4 个 `minimatch is not a function` 失败转为全过。
+
+---
+
+## 10. i18n 优先读 `*.min.json` —— 改了 locale 不跑 minify-locales 会拿到原始 key
+
+- **日期**：2026-10-08（合并上游 v0.20.0 后跑 desktop 单测时发现）
+- **现象**：`editor-context-lookup.spec.ts` 断言 `item.label` 等于 `'Look Up "markdown"'`，实际拿到的是 `'contextMenu.lookUp'`（原始 key）。但 `en.json` 里 `contextMenu.lookUp` 明明存在，键位 parity 也全绿。
+- **根因**：`common/i18n.ts` 的 `loadTranslations()` **优先读 `<lang>.min.json`，只有它不存在时才回落到 `<lang>.json`**。`*.min.json` 被 `.gitignore` 忽略、由 `pnpm run minify-locales` 生成；合并上游后 `en.json` 是新的（含上游新增键），而工作区里的 `en.min.json` 还是 9-15 的旧产物，于是"查不到 key → 回落成 key 本身"。生产构建不受影响（`build:*` 会先跑 minify-locales），**只有本地开发/测试会中招**。
+- **解法**：改动或合并任何 locale 后，本地跑一次 `pnpm run minify-locales` 刷新 `.min.json`；判断依据可以对比 mtime（`en.json` 比 `en.min.json` 新就是要刷新）。
+- **教训**：
+  - 单测里出现"期望是翻译文案、实际是 dot-notation key"时，**先怀疑 min.json 陈旧**，而不是去 diff i18n 代码；
+  - 键位 parity 脚本只能证明 `.json` 之间一致，**证明不了运行时读到的 `.min.json`**——两者要分别看；
+  - `.min.json` 是**被忽略的构建产物**：`git status` 干净不代表运行时数据是新的。
+- **验证**：`pnpm run minify-locales` 后 `en.min.json` 含 `contextMenu.lookUp`，`editor-context-lookup.spec.ts` 由 2 个断言失败转为全过。
