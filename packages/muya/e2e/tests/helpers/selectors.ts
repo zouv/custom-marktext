@@ -11,7 +11,12 @@ export const editor = {
     // Editor root carries this class while focus mode is enabled (toggled by
     // `Muya#setFocusMode` / applied at construction for `focusMode: true`).
     focusModeRoot: '.mu-editor.mu-focus-mode',
+    content: 'span.mu-content',
     paragraph: '.mu-paragraph',
+    // The editable leaf inside a paragraph. Carries the quick-insert hints as
+    // `::after` content, gated on the `placeholder` / `empty-hint` attributes.
+    paragraphContent: '.mu-paragraph-content',
+    listItem: '.mu-list-item',
     atxHeading: '.mu-atx-heading',
     setextHeading: '.mu-setext-heading',
     // A Shift+Enter soft line break inside a Format leaf renders as a
@@ -19,6 +24,7 @@ export const editor = {
     // packages/muya/src/inlineRenderer/renderer/softLineBreak.ts +
     // CLASS_NAMES.MU_SOFT_LINE_BREAK in packages/muya/src/config/index.ts.
     softLineBreak: '.mu-soft-line-break',
+    hardLineBreakSpace: '.mu-hard-line-break-space',
     blockQuote: '.mu-block-quote',
     bulletList: '.mu-bullet-list',
     orderList: '.mu-order-list',
@@ -32,6 +38,9 @@ export const editor = {
     // Source of truth: packages/muya/src/block/content/codeBlockContent/index.ts
     // (classList pushes 'mu-codeblock-content').
     codeContent: '.mu-codeblock-content',
+    // One absolutely positioned span per code line when `codeBlockLineNumbers`
+    // is on; the number is its `::before` counter.
+    lineNumber: '.mu-line-numbers-rows > span',
     languageInput: '.mu-language-input',
     table: 'table',
     tableCell: '.mu-table-cell',
@@ -47,6 +56,7 @@ export const editor = {
     // `$...$` token (KaTeX preview shown, source collapsed); the class drops
     // when the caret is inside, revealing the editable `.mu-math-text` source.
     inlineMath: '.mu-math',
+    displayMath: '.mu-math.mu-display-math',
     inlineMathText: '.mu-math > .mu-math-text',
     katex: '.katex',
     diagramBlock: '.mu-diagram-block',
@@ -108,6 +118,11 @@ export const floats = {
 /** Slash-menu item locator: `[data-label="atx-heading 1"]` etc. */
 export function quickInsertItem(label: string): string {
     return `${floats.quickInsert} [data-label="${label}"]`;
+}
+
+/** Preview toolbar action locator: `edit` / `delete` / `view`. */
+export function previewToolBarItem(type: string): string {
+    return `${floats.previewToolBar} li.item.${type}`;
 }
 
 /**
