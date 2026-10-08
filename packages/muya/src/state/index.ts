@@ -101,10 +101,12 @@ class JSONState {
     markdownToState(markdown: string): TState[] {
         const {
             footnote,
-            isGitlabCompatibilityEnabled,
+            texMathGfm,
+            texMathSingleBackslash,
+            texMathDoubleBackslash,
             trimUnnecessaryCodeBlockEmptyLines,
             frontMatter,
-            math,
+            texMathDollars,
             // [CUSTOM-BEGIN] CUSTOM-20260904-004 - thread preserveFormatting into the parser
             preserveFormattingOnSave,
             // [CUSTOM-END] CUSTOM-20260904-004
@@ -112,10 +114,12 @@ class JSONState {
 
         const parser = new MarkdownToState({
             footnote,
-            isGitlabCompatibilityEnabled,
+            texMathGfm,
+            texMathSingleBackslash,
+            texMathDoubleBackslash,
             trimUnnecessaryCodeBlockEmptyLines,
             frontMatter,
-            math,
+            texMathDollars,
             // [CUSTOM-BEGIN] CUSTOM-20260904-004
             preserveFormatting: preserveFormattingOnSave === true,
             // [CUSTOM-END] CUSTOM-20260904-004
@@ -223,6 +227,16 @@ class JSONState {
         this._emitStateChange();
     }
 
+    // Adds a key that is not present yet. `editOperation` cannot be used for
+    // that: a text-unicode op against an absent member fails in ot-json1.
+    insertValueOperation(path: Path, value: Doc) {
+        const operation = json1.insertOp(path, value)!;
+
+        this._operationCache.push(operation);
+
+        this._emitStateChange();
+    }
+
     dispatch(op: JSONOp, source = 'user' /* user, api */) {
         const prevDoc = this.getState();
         this._apply(op);
@@ -262,17 +276,21 @@ class JSONState {
         if (preserve) {
             const {
                 footnote,
-                isGitlabCompatibilityEnabled,
+                texMathDollars,
+                texMathGfm,
+                texMathSingleBackslash,
+                texMathDoubleBackslash,
                 trimUnnecessaryCodeBlockEmptyLines,
                 frontMatter,
-                math,
             } = this._muya.options;
             mdGenerator.setParseOptions({
                 footnote,
-                isGitlabCompatibilityEnabled,
+                texMathDollars,
+                texMathGfm,
+                texMathSingleBackslash,
+                texMathDoubleBackslash,
                 trimUnnecessaryCodeBlockEmptyLines,
                 frontMatter,
-                math,
             });
             // [CUSTOM-BEGIN] CUSTOM-20260904-005 - replay the recorded
             // trailing blank lines of the parsed source.

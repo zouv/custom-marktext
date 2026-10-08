@@ -3,7 +3,10 @@
     "counter": {
       "words": "単語数",
       "characters": "文字数",
-      "paragraphs": "段落数"
+      "paragraphs": "段落数",
+      "allCharacters": "すべての文字数",
+      "document": "文書",
+      "documentSelection": "文書 / 選択範囲"
     },
     "file": {
       "file": "ファイル",
@@ -21,6 +24,7 @@
       "export": "エクスポート",
       "exportHtml": "HTML としてエクスポート",
       "exportPdf": "PDF としてエクスポート",
+      "convertWithPandoc": "Pandoc で変換",
       "import": "インポート",
       "print": "印刷",
       "closeTab": "タブを閉じる",
@@ -185,6 +189,7 @@
     "copyAsRich": "リッチテキストとしてコピー",
     "copyAsHtml": "HTML としてコピー",
     "pasteAsPlainText": "プレーンテキストとして貼り付け",
+    "lookUp": "\"{selection}\"を調べる",
     "insertParagraphBefore": "前に段落を挿入",
     "insertParagraphAfter": "後に段落を挿入",
     "spelling": "スペルチェック...",
@@ -397,6 +402,7 @@
         "codeFontSize": "コードブロックのフォントサイズ、範囲は 12〜18",
         "codeFontFamily": "コードブロックで使用されるフォントファミリー",
         "codeBlockLineNumbers": "行番号を表示するかどうか",
+        "sourceCodeLineNumbers": "ソースコードモードで行番号を表示",
         "trimUnnecessaryCodeBlockEmptyLines": "コードブロックの最初と最後の空行をトリミング",
         "autoPairBracket": "編集時に括弧を自動で閉じる",
         "autoPairMarkdownSyntax": "Markdown 構文の自動補完",
@@ -418,8 +424,12 @@
         "frontmatterType": "フロントマターのタイプ",
         "superSubScript": "Pandoc の markdown 拡張上付き文字と下付き文字を有効にする",
         "footnote": "Pandoc の markdown 拡張脚注を有効にする",
+        "texMathDollars": "Pandoc の markdown 拡張 tex_math_dollars を有効にする",
+        "texMathGfm": "Pandoc の markdown 拡張 tex_math_gfm を有効にする",
+        "texMathSingleBackslash": "Pandoc の markdown 拡張 tex_math_single_backslash を有効にする",
+        "texMathDoubleBackslash": "Pandoc の markdown 拡張 tex_math_double_backslash を有効にする",
         "isHtmlEnabled": "HTML レンダリングを有効にする",
-        "isGitlabCompatibilityEnabled": "GitLab 互換モードを有効にする",
+        "softNewlineAsSpace": "ソフト改行をスペースとして扱う",
         "sequenceTheme": "シーケンス図のテーマ",
         "plantumlServer": "PlantUML サーバーの URL",
         "theme": "MarkText で使用するテーマの選択",
@@ -512,7 +522,8 @@
           "korean": "한국어",
           "dutch": "Nederlands",
           "portuguese": "Português",
-          "turkish": "Türkçe"
+          "turkish": "Türkçe",
+          "russian": "Русский"
         }
       }
     },
@@ -524,7 +535,8 @@
         "lineHeight": "行の高さ",
         "fontFamily": "フォントファミリー",
         "maxWidth": "最大幅",
-        "maxWidthNotes": "エディターコンテンツの最大幅"
+        "maxWidthNotes": "エディターコンテンツの最大幅。数値の後に単位 px、ch（文字数）、% のいずれかを付けて入力します（例: 800px、80ch、60%）。空欄の場合は既定の幅を使用します。",
+        "maxWidthInvalid": "数値の後に px、ch、% のいずれかを付けて入力してください（例: 800px）。"
       },
       "codeBlock": {
         "title": "コードブロック",
@@ -569,7 +581,8 @@
         "hideLinkPopup": "リンクポップアップを隠す",
         "autoCheck": "自動チェック",
         "autoNormalizeLineEndings": "開くときに改行コードを自動的に LF へ統一",
-        "wrapCodeBlocks": "コードブロックを折り返し"
+        "wrapCodeBlocks": "コードブロックを折り返し",
+        "sourceCodeLineNumbers": "ソースコードモードで行番号を表示"
       }
     },
     "image": {
@@ -639,6 +652,10 @@
         "superSubScript": "上付き/下付き文字",
         "footnote": "脚注",
         "footnoteNotes": "脚注",
+        "texMathDollars": "$ と $$ による TeX 数式",
+        "texMathGfm": "GitHub の TeX 数式（$`…`$ と ```math）",
+        "texMathSingleBackslash": "単一バックスラッシュの TeX 数式",
+        "texMathDoubleBackslash": "二重バックスラッシュの TeX 数式",
         "frontmatterType": {
           "jsonBrace": "JSON 括弧",
           "jsonSemicolon": "JSON セミコロン",
@@ -665,8 +682,8 @@
         "title": "その他"
       },
       "compatibility": {
-        "enableGitlab": "GitLab 互換性を有効",
-        "enableHtml": "HTML サポートを有効",
+        "enableHtml": "HTMLサポートを有効",
+        "softNewlineAsSpace": "ソフト改行をスペースとして扱う",
         "title": "互換性"
       },
       "lists": {
@@ -899,7 +916,9 @@
     "fileExists": "ファイルが既に存在します: {filename}",
     "files": "ファイル",
     "importWarning": "インポート警告",
-    "installPandoc": "Pandoc をインストール",
+    "installPandoc": "Pandoc が見つかりません。インストールするか、環境変数 MARKTEXT_PANDOC に pandoc の実行ファイルのパスを設定して MarkText を再起動してください。",
+    "exportWarning": "エクスポートの警告",
+    "exportWarningMore": "…ほか {count} 件",
     "keepOpen": "開いたままにする",
     "replace": "置換",
     "save": "保存",
@@ -939,6 +958,7 @@
       "errorWhileSaving": "保存中にエラーが発生しました : {msg}",
       "exportSuccessTitle": "エクスポートに成功",
       "exportSuccessMessage": "「{name}」を正常にエクスポートしました！",
+      "exportLinkedMediaMessage": "「{name}」をエクスポートしました。この形式は画像を埋め込まずファイル参照のままにするため、画像をファイルと同じ場所に置き、フォルダごと共有してください。",
       "fileRemovedOnDisk": "「{name}」はディスク上で削除されました。",
       "fileChangedOnDisk": "「{name}」はディスク上で変更されました。再読み込みしますか？"
     }
@@ -957,6 +977,21 @@
       "title": "表を挿入",
       "rows": "行",
       "columns": "列"
+    },
+    "mediaViewer": {
+      "title": "プレビュー",
+      "close": "閉じる",
+      "zoomIn": "拡大",
+      "zoomOut": "縮小",
+      "fit": "ウィンドウに合わせる",
+      "actualSize": "実際のサイズ",
+      "saveTitle": "図を保存",
+      "saveSvg": "SVG として保存",
+      "savePng": "PNG として保存",
+      "copyImage": "画像をコピー",
+      "copied": "画像をクリップボードにコピーしました",
+      "saveFailed": "画像を保存できませんでした: {error}",
+      "copyFailed": "画像をコピーできませんでした: {error}"
     },
     "notifications": {
       "notificationNotFound": "通知が見つかりません"

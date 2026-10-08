@@ -6,7 +6,7 @@
 > **维护铁律**：改了代码结构（新增函数 / 移动逻辑 / 改数据流 / 改接口），必须同步更新本文件。
 > **体量铁律**：超过 ~400 行即拆分——保留 §0 / §0.5 / §1，各模块细节拆到 `docs/arch/<module>.md`。
 >
-> **配套**：上游自带的架构说明见根 `CLAUDE.md`（上游维护，勿改）；历史坑点见 [`docs/pitfalls.md`](./docs/pitfalls.md)；改动账本见 [`registry.md`](./registry.md)。
+> **配套**：上游自带的架构说明见根 `AGENTS.md` 的「第二部分：上游架构与开发说明」（上游维护，勿改）；历史坑点见 [`docs/pitfalls.md`](./docs/pitfalls.md)；改动账本见 [`registry.md`](./registry.md)。
 
 ---
 
@@ -55,7 +55,7 @@ packages/muya/src/
 | i18n 文案                     | `static/locales/<lang>.json` + `docs/i18n/`（README 翻译，与 locales 无关）                                         | 全部代码           | §2.8 |
 | 打包/发布                     | `desktop/electron-builder.yml` + 根 `package.json` scripts + `scripts/`                                             | 全部业务代码       | §2.9 |
 
-> 定位优先级：**函数名 grep > 本表**。表过期时以代码为准并顺手订正本表。muya 自成体系：改 muya 前先读 `packages/muya/CLAUDE.md`。
+> 定位优先级：**函数名 grep > 本表**。表过期时以代码为准并顺手订正本表。muya 自成体系：改 muya 前先读 `packages/muya/AGENTS.md`。
 
 ---
 
@@ -109,7 +109,7 @@ packages/muya/src/
 
 | 我要改的东西                 | 关键锚点                                                                                 | 备注                                  |
 | ---------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------- |
-| 某块的行为（输入/回车/退格） | `packages/muya/src/block/<category>/<type>/*.ts` 的 `inputHandler`/`backspaceHandler` 等 | 先读 `packages/muya/CLAUDE.md`        |
+| 某块的行为（输入/回车/退格） | `packages/muya/src/block/<category>/<type>/*.ts` 的 `inputHandler`/`backspaceHandler` 等 | 先读 `packages/muya/AGENTS.md`        |
 | 新块类型                     | 新类继承 `Content`/`Parent` + `block/index.ts::registerBlocks` 注册                      | **不注册则 loadBlock 返回 undefined** |
 | 块树结构操作                 | `Editor.updateContents`（ot-json1 op 应用）                                              | 手写 pick/drop 走查                   |
 | 浮动工具 UI                  | `packages/muya/src/ui/`（baseFloat/baseScrollFloat）                                     | @floating-ui/dom 定位                 |

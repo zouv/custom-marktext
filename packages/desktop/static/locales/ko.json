@@ -3,7 +3,10 @@
     "counter": {
       "words": "단어 수",
       "characters": "글자 수",
-      "paragraphs": "단락 수"
+      "paragraphs": "단락 수",
+      "allCharacters": "전체 글자 수",
+      "document": "문서",
+      "documentSelection": "문서 / 선택 영역"
     },
     "file": {
       "file": "파일",
@@ -21,6 +24,7 @@
       "export": "내보내기",
       "exportHtml": "HTML로 내보내기",
       "exportPdf": "PDF로 내보내기",
+      "convertWithPandoc": "Pandoc으로 변환",
       "import": "가져오기",
       "print": "인쇄",
       "closeTab": "탭 닫기",
@@ -185,6 +189,7 @@
     "copyAsRich": "서식 있는 텍스트로 복사",
     "copyAsHtml": "HTML로 복사",
     "pasteAsPlainText": "일반 텍스트로 붙여넣기",
+    "lookUp": "\"{selection}\" 찾아보기",
     "insertParagraphBefore": "앞에 단락 삽입",
     "insertParagraphAfter": "뒤에 단락 삽입",
     "spelling": "맞춤법...",
@@ -397,6 +402,7 @@
         "codeFontSize": "코드 블록의 글꼴 크기, 범위는 12~18",
         "codeFontFamily": "코드 블록에서 사용되는 글꼴 패밀리",
         "codeBlockLineNumbers": "줄 번호를 표시할지 여부",
+        "sourceCodeLineNumbers": "소스 코드 모드에서 줄 번호 표시",
         "trimUnnecessaryCodeBlockEmptyLines": "코드 블록의 시작과 끝에 있는 빈 줄 제거",
         "autoPairBracket": "편집 시 자동으로 괄호 쌍 만들기",
         "autoPairMarkdownSyntax": "마크다운 구문 자동 완성",
@@ -418,8 +424,12 @@
         "frontmatterType": "프론트매터 유형",
         "superSubScript": "Pandoc의 마크다운 확장 위첨자와 아래첨자 활성화",
         "footnote": "Pandoc의 마크다운 확장 각주 활성화",
+        "texMathDollars": "Pandoc의 markdown 확장 tex_math_dollars 활성화",
+        "texMathGfm": "Pandoc의 markdown 확장 tex_math_gfm 활성화",
+        "texMathSingleBackslash": "Pandoc의 markdown 확장 tex_math_single_backslash 활성화",
+        "texMathDoubleBackslash": "Pandoc의 markdown 확장 tex_math_double_backslash 활성화",
         "isHtmlEnabled": "HTML 렌더링 활성화",
-        "isGitlabCompatibilityEnabled": "GitLab 호환 모드 활성화",
+        "softNewlineAsSpace": "소프트 줄바꿈을 공백으로 처리",
         "sequenceTheme": "시퀀스 다이어그램 테마",
         "plantumlServer": "PlantUML 서버 URL",
         "theme": "MarkText에서 사용할 테마 선택",
@@ -512,7 +522,8 @@
           "korean": "한국어",
           "dutch": "Nederlands",
           "portuguese": "Português",
-          "turkish": "Türkçe"
+          "turkish": "Türkçe",
+          "russian": "Русский"
         }
       }
     },
@@ -524,7 +535,8 @@
         "lineHeight": "줄 높이",
         "fontFamily": "글꼴 패밀리",
         "maxWidth": "최대 너비",
-        "maxWidthNotes": "편집기 콘텐츠의 최대 너비"
+        "maxWidthNotes": "편집기 콘텐츠의 최대 너비입니다. 숫자 뒤에 px, ch(문자 수) 또는 % 단위를 붙여 입력하세요(예: 800px, 80ch, 60%). 비워 두면 기본 너비를 사용합니다.",
+        "maxWidthInvalid": "숫자 뒤에 px, ch 또는 %를 붙여 입력하세요(예: 800px)."
       },
       "codeBlock": {
         "title": "코드 블록",
@@ -569,7 +581,8 @@
         "hideLinkPopup": "링크 팝업 숨기기",
         "autoCheck": "자동 확인",
         "autoNormalizeLineEndings": "열 때 줄 바꿈을 자동으로 LF로 정규화",
-        "wrapCodeBlocks": "코드 블록 줄바꿈"
+        "wrapCodeBlocks": "코드 블록 줄바꿈",
+        "sourceCodeLineNumbers": "소스 코드 모드에서 줄 번호 표시"
       }
     },
     "image": {
@@ -639,6 +652,10 @@
         "superSubScript": "위/아래 첨자",
         "footnote": "각주",
         "footnoteNotes": "각주 노트",
+        "texMathDollars": "$ 및 $$ TeX 수식",
+        "texMathGfm": "GitHub TeX 수식($`…`$ 및 ```math)",
+        "texMathSingleBackslash": "단일 백슬래시 TeX 수식",
+        "texMathDoubleBackslash": "이중 백슬래시 TeX 수식",
         "frontmatterType": {
           "jsonBrace": "중괄호가 있는 JSON",
           "jsonSemicolon": "세미콜론이 있는 JSON",
@@ -665,8 +682,8 @@
         "title": "기타"
       },
       "compatibility": {
-        "enableGitlab": "GitLab 호환성 활성화",
         "enableHtml": "HTML 지원 활성화",
+        "softNewlineAsSpace": "소프트 줄바꿈을 공백으로 처리",
         "title": "호환성"
       },
       "lists": {
@@ -899,7 +916,9 @@
     "fileExists": "파일이 이미 존재합니다: {filename}",
     "files": "파일",
     "importWarning": "가져오기 경고",
-    "installPandoc": "Pandoc 설치",
+    "installPandoc": "Pandoc를 찾을 수 없습니다. 설치하거나 환경 변수 MARKTEXT_PANDOC에 pandoc 실행 파일 경로를 설정한 뒤 MarkText를 다시 시작하세요.",
+    "exportWarning": "내보내기 경고",
+    "exportWarningMore": "…외 {count}건",
     "keepOpen": "열어두기",
     "replace": "바꾸기",
     "save": "저장",
@@ -939,6 +958,7 @@
       "errorWhileSaving": "저장 중 오류가 발생했습니다: {msg}",
       "exportSuccessTitle": "내보내기 성공",
       "exportSuccessMessage": "“{name}”을(를) 성공적으로 내보냈습니다!",
+      "exportLinkedMediaMessage": "\"{name}\" 내보내기 완료. 이 형식은 이미지를 포함하지 않고 파일 링크로 유지하므로, 이미지를 파일과 같은 위치에 두고 폴더 전체를 공유하세요.",
       "fileRemovedOnDisk": "“{name}”이(가) 디스크에서 삭제되었습니다.",
       "fileChangedOnDisk": "“{name}”이(가) 디스크에서 변경되었습니다. 다시 로드하시겠습니까?"
     }
@@ -957,6 +977,21 @@
       "title": "표 삽입",
       "rows": "행",
       "columns": "열"
+    },
+    "mediaViewer": {
+      "title": "미리 보기",
+      "close": "닫기",
+      "zoomIn": "확대",
+      "zoomOut": "축소",
+      "fit": "창에 맞추기",
+      "actualSize": "실제 크기",
+      "saveTitle": "다이어그램 저장",
+      "saveSvg": "SVG로 저장",
+      "savePng": "PNG로 저장",
+      "copyImage": "이미지 복사",
+      "copied": "이미지를 클립보드에 복사했습니다",
+      "saveFailed": "이미지를 저장하지 못했습니다: {error}",
+      "copyFailed": "이미지를 복사하지 못했습니다: {error}"
     },
     "notifications": {
       "notificationNotFound": "알림을 찾을 수 없음"

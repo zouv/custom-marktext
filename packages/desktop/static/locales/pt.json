@@ -3,7 +3,10 @@
     "counter": {
       "words": "Palavras",
       "characters": "Caracteres",
-      "paragraphs": "Parágrafos"
+      "paragraphs": "Parágrafos",
+      "allCharacters": "Todos os caracteres",
+      "document": "Documento",
+      "documentSelection": "Documento / Seleção"
     },
     "file": {
       "file": "Arquivo",
@@ -21,6 +24,7 @@
       "export": "Exportar",
       "exportHtml": "Exportar como HTML",
       "exportPdf": "Exportar como PDF",
+      "convertWithPandoc": "Converter com o Pandoc",
       "import": "Importar",
       "print": "Imprimir",
       "closeTab": "Fechar Aba",
@@ -185,6 +189,7 @@
     "copyAsRich": "Copiar como Rich Text",
     "copyAsHtml": "Copiar como HTML",
     "pasteAsPlainText": "Colar como Texto Simples",
+    "lookUp": "Consultar \"{selection}\"",
     "insertParagraphBefore": "Inserir Parágrafo Antes",
     "insertParagraphAfter": "Inserir Parágrafo Depois",
     "spelling": "Ortografia...",
@@ -397,6 +402,7 @@
         "codeFontSize": "Tamanho da fonte no bloco de código, o intervalo é 12 ~ 18",
         "codeFontFamily": "Família de fonte usada no bloco de código",
         "codeBlockLineNumbers": "Se mostrar os números de linha",
+        "sourceCodeLineNumbers": "Mostrar números de linha no modo código fonte",
         "trimUnnecessaryCodeBlockEmptyLines": "Aparar as linhas vazias do início e fim no bloco de código",
         "autoPairBracket": "Parênteses automáticos ao editar",
         "autoPairMarkdownSyntax": "Autocompletar sintaxe markdown",
@@ -418,8 +424,12 @@
         "frontmatterType": "O tipo de frontmatter",
         "superSubScript": "Habilitar extensão markdown do pandoc para sobrescrito e subscrito",
         "footnote": "Habilitar extensão markdown do pandoc para nota de rodapé",
+        "texMathDollars": "Ativar a extensão markdown do pandoc tex_math_dollars",
+        "texMathGfm": "Ativar a extensão markdown do pandoc tex_math_gfm",
+        "texMathSingleBackslash": "Ativar a extensão markdown do pandoc tex_math_single_backslash",
+        "texMathDoubleBackslash": "Ativar a extensão markdown do pandoc tex_math_double_backslash",
         "isHtmlEnabled": "Habilitar renderização HTML",
-        "isGitlabCompatibilityEnabled": "Habilitar modo de compatibilidade GitLab",
+        "softNewlineAsSpace": "Tratar quebras de linha suaves como espaços",
         "sequenceTheme": "Tema do diagrama de sequência",
         "plantumlServer": "URL do servidor PlantUML",
         "theme": "Selecionar o tema usado no MarkText",
@@ -512,7 +522,8 @@
           "korean": "한국어",
           "dutch": "Nederlands",
           "portuguese": "Português",
-          "turkish": "Türkçe"
+          "turkish": "Türkçe",
+          "russian": "Русский"
         }
       }
     },
@@ -524,7 +535,8 @@
         "lineHeight": "Altura da linha",
         "fontFamily": "Família da fonte",
         "maxWidth": "Largura máxima",
-        "maxWidthNotes": "Largura máxima do conteúdo do editor"
+        "maxWidthNotes": "Largura máxima do conteúdo do editor. Digite um número seguido de px, ch (caracteres) ou %, por exemplo 800px, 80ch ou 60%. Deixe vazio para usar a largura padrão.",
+        "maxWidthInvalid": "Digite um número seguido de px, ch ou %, por exemplo 800px."
       },
       "codeBlock": {
         "title": "Bloco de Código",
@@ -569,7 +581,8 @@
         "hideLinkPopup": "Ocultar popup de link",
         "autoCheck": "Verificação automática",
         "autoNormalizeLineEndings": "Normalizar automaticamente finais de linha para LF ao abrir",
-        "wrapCodeBlocks": "Quebrar blocos de código"
+        "wrapCodeBlocks": "Quebrar blocos de código",
+        "sourceCodeLineNumbers": "Mostrar números de linha no modo código fonte"
       }
     },
     "image": {
@@ -639,6 +652,10 @@
         "superSubScript": "Super/Sub script",
         "footnote": "Nota de rodapé",
         "footnoteNotes": "Notas de rodapé",
+        "texMathDollars": "Matemática TeX com $ e $$",
+        "texMathGfm": "Matemática TeX do GitHub ($`…`$ e ```math)",
+        "texMathSingleBackslash": "Matemática TeX com barra invertida simples",
+        "texMathDoubleBackslash": "Matemática TeX com barra invertida dupla",
         "frontmatterType": {
           "jsonBrace": "JSON com Chaves",
           "jsonSemicolon": "JSON com Ponto e Vírgula",
@@ -665,8 +682,8 @@
         "title": "Diversos"
       },
       "compatibility": {
-        "enableGitlab": "Habilitar compatibilidade GitLab",
         "enableHtml": "Habilitar suporte HTML",
+        "softNewlineAsSpace": "Tratar quebras de linha suaves como espaços",
         "title": "Compatibilidade"
       },
       "lists": {
@@ -899,7 +916,9 @@
     "fileExists": "O arquivo já existe: {filename}",
     "files": "Arquivos",
     "importWarning": "Aviso de importação",
-    "installPandoc": "Instalar Pandoc",
+    "installPandoc": "Pandoc não foi encontrado. Instale-o, ou defina a variável de ambiente MARKTEXT_PANDOC com o caminho do executável do pandoc e reinicie o MarkText.",
+    "exportWarning": "Aviso de exportação",
+    "exportWarningMore": "…e mais {count}",
     "keepOpen": "Manter aberto",
     "replace": "Substituir",
     "save": "Salvar",
@@ -939,6 +958,7 @@
       "errorWhileSaving": "Ocorreu um erro ao salvar: {msg}",
       "exportSuccessTitle": "Exportado com sucesso",
       "exportSuccessMessage": "“{name}” foi exportado com sucesso!",
+      "exportLinkedMediaMessage": "\"{name}\" foi exportado. Este formato liga as imagens em vez de incorporá-las: mantenha as imagens junto do arquivo e compartilhe a pasta inteira.",
       "fileRemovedOnDisk": "“{name}” foi removido no disco.",
       "fileChangedOnDisk": "“{name}” foi alterado no disco. Deseja recarregar?"
     }
@@ -957,6 +977,21 @@
       "title": "Inserir Tabela",
       "rows": "Linhas",
       "columns": "Colunas"
+    },
+    "mediaViewer": {
+      "title": "Pré-visualização",
+      "close": "Fechar",
+      "zoomIn": "Ampliar",
+      "zoomOut": "Reduzir",
+      "fit": "Ajustar à janela",
+      "actualSize": "Tamanho real",
+      "saveTitle": "Salvar diagrama",
+      "saveSvg": "Salvar como SVG",
+      "savePng": "Salvar como PNG",
+      "copyImage": "Copiar imagem",
+      "copied": "Imagem copiada para a área de transferência",
+      "saveFailed": "Não foi possível salvar a imagem: {error}",
+      "copyFailed": "Não foi possível copiar a imagem: {error}"
     },
     "notifications": {
       "notificationNotFound": "Notificação não encontrada"

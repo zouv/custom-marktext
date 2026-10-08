@@ -38,6 +38,19 @@ import { MarkdownToState } from './markdownToState';
 // [CUSTOM-END] CUSTOM-20260904-004
 import { isAnyListState } from './types';
 
+// [CUSTOM-BEGIN] CUSTOM-20260904-004 - the option subset MarkdownToState needs
+// for the re-parse; `preserveFormatting` is owned by the serializer, not the caller.
+interface IReparseOptions {
+    footnote: boolean;
+    texMathDollars: boolean;
+    texMathGfm: boolean;
+    texMathSingleBackslash: boolean;
+    texMathDoubleBackslash: boolean;
+    trimUnnecessaryCodeBlockEmptyLines: boolean;
+    frontMatter: boolean;
+}
+// [CUSTOM-END] CUSTOM-20260904-004
+
 const debug = logger('export markdown: ');
 const SETEXT_SAFE_BULLET_MARKER = '*';
 
@@ -59,8 +72,9 @@ export interface IExportMarkdownOptions {
 export default class ExportMarkdown {
     // Stack of currently-open list metas while serializing a tree (push on
     // descent into bullet/order/task list, pop on ascent). The serializer
-    // reads `loose` / `marker` / `delimiter` / `start` from the top entry
-    // to render the correct bullet, indentation, and tightness.
+    // reads `loose` / `marker` / `delimiter` / `start` / `sourceMarkers` from
+    // the top entry to render the correct bullet, indentation, and tightness.
+    // Entries are clones, so items consume `start` and `sourceMarkers` in place.
     private _listType: (
         | IBulletListState['meta']
         | IOrderListState['meta']
@@ -78,13 +92,7 @@ export default class ExportMarkdown {
     private _reparseStatesCache: Map<string, TState[]>;
     // Lexer options for the consistency re-parse, set by setParseOptions()
     // from the muya instance owning the state (see JSONState.getMarkdownFromState).
-    private _parseOptions: {
-        footnote: boolean;
-        math: boolean;
-        isGitlabCompatibilityEnabled: boolean;
-        trimUnnecessaryCodeBlockEmptyLines: boolean;
-        frontMatter: boolean;
-    } | null;
+    private _parseOptions: IReparseOptions | null;
     // [CUSTOM-END] CUSTOM-20260904-004
 
     constructor(
@@ -158,13 +166,7 @@ export default class ExportMarkdown {
      * Must be called before generate() when preserveFormatting is on;
      * JSONState.getMarkdownFromState does this from its muya instance.
      */
-    setParseOptions(options: {
-        footnote: boolean;
-        math: boolean;
-        isGitlabCompatibilityEnabled: boolean;
-        trimUnnecessaryCodeBlockEmptyLines: boolean;
-        frontMatter: boolean;
-    }): void {
+    setParseOptions(options: IReparseOptions): void {
         this._parseOptions = options;
     }
 
@@ -292,6 +294,10 @@ export default class ExportMarkdown {
                     && this._startsWithEmptyDashBulletItem(state)
                     ? SETEXT_SAFE_BULLET_MARKER
                     : undefined;
+                const followsTightList = previousState !== undefined
+                    && isAnyListState(previousState)
+                    && !previousState.meta.loose
+                    && !state.meta.loose;
                 lastListBullet = this._serializeListBlock(
                     state,
                     result,
@@ -299,6 +305,7 @@ export default class ExportMarkdown {
                     listIndent,
                     lastListBullet,
                     markerOverride,
+                    followsTightList,
                 );
             }
             else if (state.name === 'list-item' || state.name === 'task-list-item') {
@@ -389,18 +396,28 @@ export default class ExportMarkdown {
         listIndent: string,
         lastListBullet: string,
         markerOverride?: string,
+        followsTightList = false,
     ): string {
         let insertNewLine = this._isLooseParentList;
         this._isLooseParentList = true;
         const meta = deepClone(state.meta);
         if (markerOverride && 'marker' in meta)
             meta.marker = markerOverride;
+        // Ordered task lists carry `sourceMarkers` too.
+        if (state.name !== 'bullet-list' && 'sourceMarkers' in meta && !this._shouldPreserveOrderMarkers(state))
+            delete meta.sourceMarkers;
 
         // Start a new list without separation due changing the bullet or ordered list delimiter starts a new list.
         const bulletMarkerOrDelimiter
             = 'delimiter' in meta ? meta.delimiter : meta.marker;
 
         if (lastListBullet && lastListBullet !== bulletMarkerOrDelimiter)
+            insertNewLine = false;
+
+        // Adjacent tight lists with the same marker are one markdown list (the
+        // parser splits it where items switch between plain and task), so a
+        // blank line would only make that list loose on the next parse.
+        if (lastListBullet === bulletMarkerOrDelimiter && followsTightList)
             insertNewLine = false;
 
         if (insertNewLine)
@@ -411,6 +428,21 @@ export default class ExportMarkdown {
         this._listType.pop();
 
         return bulletMarkerOrDelimiter;
+    }
+
+    // Source markers only hold while the list keeps the items it was parsed
+    // with: an insert, delete or reorder breaks the per-item match, and the
+    // list falls back to numbering from `start`.
+    private _shouldPreserveOrderMarkers(state: IOrderListState | ITaskListState) {
+        const sourceMarkers = 'sourceMarkers' in state.meta
+            ? state.meta.sourceMarkers
+            : undefined;
+        if (!sourceMarkers || sourceMarkers.length !== state.children.length)
+            return false;
+
+        return state.children.every((child, index) =>
+            child.meta?.orderMarker === sourceMarkers[index],
+        );
     }
 
     private _startsWithEmptyDashBulletItem(
@@ -533,7 +565,14 @@ export default class ExportMarkdown {
         const { type, lang } = meta;
 
         if (type === 'fenced') {
-            const fence = '`'.repeat(this._codeFenceLength(text, meta.fenceLength));
+            // A backtick fence's info string may not contain a backtick
+            // (CommonMark §4.5), so fall back to a tilde fence rather than emit
+            // markdown that would not read back as a code block.
+            const fenceChar: '`' | '~'
+                = meta.fenceChar === '~' || lang.includes('`') ? '~' : '`';
+            const fence = fenceChar.repeat(
+                this._codeFenceLength(text, meta.fenceLength, fenceChar),
+            );
             result.push(`${indent}${lang ? `${fence}${lang}\n` : `${fence}\n`}`);
             textList.forEach((text) => {
                 result.push(`${indent}${text}\n`);
@@ -549,14 +588,16 @@ export default class ExportMarkdown {
         return result.join('');
     }
 
-    // The opening fence must be longer than any all-backtick line in the body
-    // (else that line closes the block early), at least as long as the original
-    // fence, and never shorter than the markdown minimum of 3.
-    private _codeFenceLength(text: string, stored?: number): number {
+    // The opening fence must be longer than any interior line made only of the
+    // same fence character (else that line closes the block early), at least as
+    // long as the original fence, and never shorter than the markdown minimum
+    // of 3.
+    private _codeFenceLength(text: string, stored: number | undefined, fenceChar: '`' | '~'): number {
+        const fenceRun = fenceChar === '`' ? /^`+$/ : /^~+$/;
         let longestInterior = 0;
         for (const line of text.split('\n')) {
             const trimmed = line.trim();
-            if (/^`+$/.test(trimmed))
+            if (fenceRun.test(trimmed))
                 longestInterior = Math.max(longestInterior, trimmed.length);
         }
 
@@ -743,15 +784,20 @@ export default class ExportMarkdown {
             itemMarker = marker ? `${marker} ` : '- ';
         }
         else if ('start' in listInfo) {
-            // NOTE: GitHub and Bitbucket limit the list count to 99 but this is nowhere defined.
-            //  We limit the number to 99 for Daring Fireball Markdown to prevent indentation issues.
-            let n = listInfo.start;
-            if ((this._listIndentation === 'dfm' && n > 99) || n > 999999999)
-                n = 1;
+            const preservedMarker = listInfo.sourceMarkers?.shift();
+            if (preservedMarker) {
+                itemMarker = `${preservedMarker} `;
+            }
+            else {
+                // NOTE: GitHub and Bitbucket limit the list count to 99 but this is nowhere defined.
+                //  We limit the number to 99 for Daring Fireball Markdown to prevent indentation issues.
+                let n = listInfo.start;
+                if ((this._listIndentation === 'dfm' && n > 99) || n > 999999999)
+                    n = 1;
 
+                itemMarker = `${n}${delimiter || '.'} `;
+            }
             listInfo.start++;
-
-            itemMarker = `${n}${delimiter || '.'} `;
         }
         else {
             itemMarker = '- ';
@@ -775,7 +821,7 @@ export default class ExportMarkdown {
         let listIndent = '';
         const { _listIndentation: listIndentation } = this;
         if (listIndentation === 'dfm')
-            listIndent = ' '.repeat(4 - itemMarker.length);
+            listIndent = ' '.repeat(Math.max(0, 4 - itemMarker.length));
         else if (listIndentation === 'number')
             listIndent = ' '.repeat(this._listIndentationCount - 1);
 

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { checkImageContentType, getImageSrc, loadImage } from '../image';
+import { checkImageContentType, getImageSrc, loadImage, usesDefaultObjectSize } from '../image';
 
 // Regression tests for the Phase G "G1" blocker: relative-path images stopped
 // rendering after the @muyajs/core migration because `getImageSrc` returned a
@@ -183,6 +183,29 @@ describe('getImageSrc — relative local image paths anchored to window.DIRNAME'
     });
 });
 
+describe('getImageSrc — document directory containing URL-significant characters (#5212)', () => {
+    it.each([
+        ['/home/user/C# notes'],
+        ['/home/user/what? notes'],
+        ['/home/user/50%25 off'],
+    ])('loads the image from the real file under %s', (dirname) => {
+        withDirname(dirname, () => {
+            const url = new URL(getImageSrc('assets/image.jpg').src);
+            expect(url.hash).toBe('');
+            expect(url.search).toBe('');
+            expect(decodeURIComponent(url.pathname)).toBe(`${dirname}/assets/image.jpg`);
+        });
+    });
+
+    it('does not re-encode the already URL-encoded markdown path', () => {
+        withDirname('/home/user/C# notes', () => {
+            expect(getImageSrc('assets/my%20image.jpg').src).toBe(
+                'file:///home/user/C%23 notes/assets/my%20image.jpg',
+            );
+        });
+    });
+});
+
 describe('getImageSrc — non-relative sources are left unchanged', () => {
     it('leaves an absolute POSIX local path as a single `file://`', () => {
         withDirname(DIRNAME, () => {
@@ -289,5 +312,33 @@ describe('getImageSrc — Windows drive + UNC base directories (Phase G review)'
                 'file://server/share/img/a.png',
             );
         });
+    });
+});
+
+// An SVG that carries only a `viewBox` has no intrinsic size, and Chromium
+// reports the CSS default object size (300×150, contained to the image's
+// ratio) as its natural size. `usesDefaultObjectSize` recognises that
+// fallback so the renderer can pin a width for it (#4991).
+describe('usesDefaultObjectSize', () => {
+    it('recognises the un-constrained fallback (no ratio at all)', () => {
+        expect(usesDefaultObjectSize(300, 150)).toBe(true);
+    });
+
+    it('recognises a wide ratio contained to the fallback width', () => {
+        expect(usesDefaultObjectSize(300, 136)).toBe(true);
+    });
+
+    it('recognises a tall ratio contained to the fallback height', () => {
+        expect(usesDefaultObjectSize(75, 150)).toBe(true);
+    });
+
+    it('rejects an image with a size of its own', () => {
+        expect(usesDefaultObjectSize(4000, 2000)).toBe(false);
+        expect(usesDefaultObjectSize(120, 60)).toBe(false);
+    });
+
+    it('rejects an unmeasured image', () => {
+        expect(usesDefaultObjectSize(undefined, undefined)).toBe(false);
+        expect(usesDefaultObjectSize(300, undefined)).toBe(false);
     });
 });
