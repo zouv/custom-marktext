@@ -131,3 +131,29 @@
   - 键位 parity 脚本只能证明 `.json` 之间一致，**证明不了运行时读到的 `.min.json`**——两者要分别看；
   - `.min.json` 是**被忽略的构建产物**：`git status` 干净不代表运行时数据是新的。
 - **验证**：`pnpm run minify-locales` 后 `en.min.json` 含 `contextMenu.lookUp`，`editor-context-lookup.spec.ts` 由 2 个断言失败转为全过。
+
+---
+
+## 11. bat 里的 `timeout /t` 在 Git Bash 下被 GNU `timeout` 顶掉 —— 打包退避形同虚设
+
+- **日期**：2026-10-08（打包 v0.20.0-custom.3 时，electron-builder 连挂 3 次全在同一秒内）
+- **现象**：`sh CUSTOMIZATIONS/scripts/manager.sh unpacked` 失败于 `EPERM: operation not permitted, rename 'dist\win-unpacked.tmp' -> 'dist\win-unpacked'`（electron-builder 解压 Electron 后重命名暂存目录被拒）。日志里出现 `[WARN] electron-builder failed (try 2/3). Antivirus may be scanning the output; waiting 15s before retry...` 紧跟 `timeout: invalid time interval '/t'`——**"等待 15s"实际是 0s**，3 次尝试在杀软扫描窗口内连续失败。
+- **根因**：`build-unpacked.bat` / `build-setup.bat` 的重试退避写成 `timeout /t 15 /nobreak >nul`。bat 由 `manager.sh` 经 `cmd //c` 启动，而**从 Git Bash 调用时 PATH 里的 `timeout` 是 GNU coreutils 的 timeout**（`/usr/bin/timeout`），它把 `/t` 当成非法时间间隔直接报错返回；Windows 自带的 `%SystemRoot%\System32\timeout.exe` 根本没被调用。于是这个"抗杀软退避"机制在 Git Bash 下完全失效——它恰恰是为 Windows 杀软场景写的，却只在 cmd 里跑才生效。
+- **解法**：退避改用绝对路径，并留一个不依赖 PATH 的兜底：
+  ```bat
+  "%SystemRoot%\System32\timeout.exe" /t 15 /nobreak >nul 2>&1 || ping -n 16 127.0.0.1 >nul
+  ```
+  **但这只修好了"退避"这一半，单独改它仍会失败**：重试循环里第一次失败会留下半成品 `dist\win-unpacked\`（以及 `win-unpacked.tmp`），第二次直接在暂存目录改名处 EPERM——三次尝试死法完全相同（第 1 次死在 `open marktext.exe`，第 2/3 次死在 `rename`）。所以还要**在每次尝试前清掉部分产物**：
+  ```bat
+  :PackageRun
+  if exist "dist\win-unpacked" rmdir /S /Q "dist\win-unpacked" >nul 2>&1
+  if exist "dist\win-unpacked.tmp" rmdir /S /Q "dist\win-unpacked.tmp" >nul 2>&1
+  call npx electron-builder build ...
+  ```
+  两处改动已同步到 `build-unpacked.bat` 与 `build-setup.bat`。注意实践中第 1 次尝试仍可能因杀软锁 exe 失败——**它本来就是用来兜住这一下的**，关键是第 2 次能从干净状态重试。
+- **教训**：
+  - **bat 脚本里凡是用到 Windows 内建命令（`timeout`/`find`/`sort`/`more`…），都要警惕 Git Bash 的 GNU 同名命令抢 PATH**；只差一个 `timeout`，抗杀软机制就静默失效，且失败现象（连挂 3 次）与"没有重试机制"完全一样，极易误判成杀软太凶；
+  - **重试机制要验证它真的在等**：看日志时间戳/间隔，别只看"有 try N/3 字样"；
+  - `EPERM rename` 是 Windows 打包的常态（杀软/索引器占用刚解压的 exe），正确应对是**清掉 `.tmp` 残骸 + 真实等待后重试**，而不是反复立刻重跑；
+  - 打包脚本的健壮性检查要包含"从 Git Bash 跑"和"从 cmd 跑"两条路径——本仓库的调用入口（`manager.sh`）恰好是前者。
+- **验证**：两处修复后重跑 `build-unpacked.bat --skip-build`，日志出现真实 15s 间隔的重试（且重试前打印清理动作），最终 `EXIT=0`、`[SUCCESS] unpacked build finished.`，产物 `dist/win-unpacked/marktext.exe`（226 MB）生成，`FileVersion = 0.20.0-custom.3`。
