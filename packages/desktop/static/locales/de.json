@@ -206,6 +206,12 @@
       "moveToTrash": "In Papierkorb verschieben",
       "showInFolder": "Im Ordner anzeigen"
     },
+    "workspace": {
+      "addFolder": "Ordner zum Arbeitsbereich hinzufügen",
+      "removeFolder": "Ordner aus dem Arbeitsbereich entfernen",
+      "saveWorkspace": "Arbeitsbereich speichern",
+      "saveWorkspaceAs": "Arbeitsbereich speichern unter..."
+    },
     "tabs": {
       "close": "Schließen",
       "closeOthers": "Andere schließen",
@@ -260,12 +266,29 @@
       "readError": "Verzeichnis konnte nicht gelesen werden.",
       "retry": "Erneut versuchen"
     },
+    "workspace": {
+      "title": "Arbeitsbereich",
+      "noWorkspace": "Kein Arbeitsbereich geöffnet.",
+      "open": "Arbeitsbereich öffnen",
+      "addFolder": "Ordner hinzufügen",
+      "save": "Speichern",
+      "saveAs": "Speichern unter...",
+      "close": "Arbeitsbereich schließen",
+      "openRecent": "Zuletzt geöffnet",
+      "noRecent": "Keine zuletzt geöffneten Arbeitsbereiche",
+      "clearRecent": "Zuletzt geöffnete löschen",
+      "refresh": "Aktualisieren",
+      "loading": "Wird geladen...",
+      "readError": "Ordner konnte nicht gelesen werden.",
+      "unsaved": "Nicht gespeicherte Änderungen"
+    },
     "icons": {
       "files": "Dateien",
       "search": "Suchen",
       "toc": "Inhaltsverzeichnis",
       "currentDir": "Aktuelles Verzeichnis",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "workspace": "Arbeitsbereich"
     }
   },
   "commandPalette": {

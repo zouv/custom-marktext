@@ -206,6 +206,12 @@
       "moveToTrash": "Çöp Kutusuna Taşı",
       "showInFolder": "Klasörde Göster"
     },
+    "workspace": {
+      "addFolder": "Çalışma Alanına Klasör Ekle",
+      "removeFolder": "Klasörü Çalışma Alanından Kaldır",
+      "saveWorkspace": "Çalışma Alanını Kaydet",
+      "saveWorkspaceAs": "Çalışma Alanını Farklı Kaydet..."
+    },
     "tabs": {
       "close": "Kapat",
       "closeOthers": "Diğerlerini kapat",
@@ -260,12 +266,29 @@
       "readError": "Dizin okunamadı.",
       "retry": "Yeniden dene"
     },
+    "workspace": {
+      "title": "Çalışma Alanı",
+      "noWorkspace": "Açık çalışma alanı yok.",
+      "open": "Çalışma Alanını Aç",
+      "addFolder": "Klasör Ekle",
+      "save": "Kaydet",
+      "saveAs": "Farklı Kaydet...",
+      "close": "Çalışma Alanını Kapat",
+      "openRecent": "Son Kullanılanları Aç",
+      "noRecent": "Son çalışma alanı yok",
+      "clearRecent": "Son kullanılanları temizle",
+      "refresh": "Yenile",
+      "loading": "Yükleniyor...",
+      "readError": "Bu klasör okunamadı.",
+      "unsaved": "Kaydedilmemiş değişiklikler"
+    },
     "icons": {
       "files": "Dosyalar",
       "search": "Ara",
       "toc": "İçindekiler",
       "currentDir": "Geçerli dizin",
-      "settings": "Ayarlar"
+      "settings": "Ayarlar",
+      "workspace": "Çalışma Alanı"
     }
   },
   "commandPalette": {

@@ -3,6 +3,9 @@ import {
   Search as SearchIcon,
   Memo as TocIcon,
   Files as CurrentDirIcon,
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - workspace panel icon
+  FolderOpened as WorkspaceIcon,
+  // [CUSTOM-END] CUSTOM-20261009-001
   Setting as SettingIcon
 } from '@element-plus/icons-vue'
 import { t } from '@/i18n'
@@ -34,8 +37,15 @@ export const sideBarIcons: SideBarIconEntry[] = [
     id: 'currentDir',
     name: () => t('sideBar.icons.currentDir'),
     icon: CurrentDirIcon
-  }
+  },
   // [CUSTOM-END] CUSTOM-20260909-001
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - workspace panel icon
+  {
+    id: 'workspace',
+    name: () => t('sideBar.icons.workspace'),
+    icon: WorkspaceIcon
+  }
+  // [CUSTOM-END] CUSTOM-20261009-001
 ]
 
 export const sideBarBottomIcons: SideBarIconEntry[] = [

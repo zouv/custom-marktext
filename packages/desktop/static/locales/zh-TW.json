@@ -206,6 +206,12 @@
       "moveToTrash": "移到垃圾桶",
       "showInFolder": "在資料夾中顯示"
     },
+    "workspace": {
+      "addFolder": "新增資料夾至工作區",
+      "removeFolder": "從工作區移除資料夾",
+      "saveWorkspace": "儲存工作區",
+      "saveWorkspaceAs": "工作區另存新檔…"
+    },
     "tabs": {
       "close": "關閉",
       "closeOthers": "關閉其他",
@@ -260,12 +266,29 @@
       "readError": "讀取目錄失敗。",
       "retry": "重試"
     },
+    "workspace": {
+      "title": "工作區",
+      "noWorkspace": "尚未開啟工作區。",
+      "open": "開啟工作區",
+      "addFolder": "新增資料夾",
+      "save": "儲存",
+      "saveAs": "另存新檔…",
+      "close": "關閉工作區",
+      "openRecent": "最近開啟",
+      "noRecent": "沒有最近的工作區",
+      "clearRecent": "清除最近記錄",
+      "refresh": "重新整理",
+      "loading": "載入中…",
+      "readError": "讀取此資料夾失敗。",
+      "unsaved": "有未儲存的變更"
+    },
     "icons": {
       "files": "檔案",
       "search": "搜尋",
       "toc": "目錄",
       "currentDir": "目前目錄",
-      "settings": "設定"
+      "settings": "設定",
+      "workspace": "工作區"
     }
   },
   "commandPalette": {

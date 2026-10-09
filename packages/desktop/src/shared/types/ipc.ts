@@ -33,6 +33,17 @@ import type {
 } from './files'
 import type { BufferedState as BufferedStateType } from './bufferedState'
 import type { MenuTemplate, MenuPopupPosition } from './menu'
+// [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel channels
+import type {
+  OpenWorkspaceResult,
+  SaveWorkspacePayload,
+  SavedWorkspaceResult,
+  WorkspaceRoot,
+  WorkspaceRootSnapshot,
+  WorkspaceSession,
+  WorkspaceTreeEvent
+} from './workspace'
+// [CUSTOM-END] CUSTOM-20261009-001
 
 export interface SaveDialogRequest {
   title?: string
@@ -98,6 +109,22 @@ export interface IpcInvokeChannels {
   'mt::uploader::upload': { args: [req: unknown]; ret: unknown }
   'mt::win::is-fullscreen': { args: []; ret: boolean }
   'mt::win::is-maximized': { args: []; ret: boolean }
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel (invoke)
+  'mt::workspace::get-recents': { args: []; ret: string[] }
+  'mt::workspace::get-session': { args: []; ret: WorkspaceSession | null }
+  'mt::workspace::get-roots-status': {
+    args: [roots: WorkspaceRoot[]]
+    ret: { roots: WorkspaceRoot[]; missing: string[] }
+  }
+  'mt::workspace::open': { args: [filePath?: string]; ret: OpenWorkspaceResult | null }
+  'mt::workspace::pick-folders': { args: []; ret: string[] }
+  'mt::workspace::refresh-root': { args: [rootPath: string]; ret: WorkspaceRootSnapshot | null }
+  'mt::workspace::save': { args: [payload: SaveWorkspacePayload]; ret: SavedWorkspaceResult | null }
+  'mt::workspace::set-roots': {
+    args: [roots: WorkspaceRoot[]]
+    ret: WorkspaceRootSnapshot[]
+  }
+  // [CUSTOM-END] CUSTOM-20261009-001
   // Main derives the BrowserWindow via BrowserWindow.fromWebContents(e.sender);
   // no need to pass windowId. Payload is the editor+project+layout snapshot.
   'update-buffer-state': { args: [payload: unknown]; ret: void }
@@ -204,6 +231,11 @@ export interface IpcSendChannels {
   'mt::window-tab-closed': [pathname: string]
   'mt::window-toggle-always-on-top': []
   'mt::window::drop': [payload: unknown]
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel (send)
+  'mt::workspace::clear-recents': []
+  'mt::workspace::close': []
+  'mt::workspace::set-session': [session: WorkspaceSession]
+  // [CUSTOM-END] CUSTOM-20261009-001
   'screen-capture': [payload: unknown]
   'set-image-folder-path': [path: string]
   'set-user-preference': [partial: unknown]
@@ -298,6 +330,9 @@ export interface IpcMainEventChannels {
   'mt::toggle-view-mode-entry': [entry: string]
   'mt::update-file': [payload: { type: 'add' | 'change' | 'unlink'; change: FileChangeDetail }]
   'mt::update-object-tree': [payload: unknown]
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel (push)
+  'mt::workspace::tree-event': [event: WorkspaceTreeEvent]
+  // [CUSTOM-END] CUSTOM-20261009-001
   'mt::user-preference': [partial: unknown]
   'mt::window-active-status': [active: boolean]
   'mt::window-enter-full-screen': []

@@ -10,6 +10,9 @@ import { registerCmdHandlers } from './cmd'
 import { registerI18nHandlers } from './i18n'
 import { registerDialogHandlers } from './dialog'
 import { registerDiagramHandlers } from './diagram'
+// [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel
+import { registerWorkspaceHandlers } from './workspace'
+// [CUSTOM-END] CUSTOM-20261009-001
 
 export const registerSandboxIpcHandlers = (): void => {
   registerBootInfo()
@@ -24,4 +27,7 @@ export const registerSandboxIpcHandlers = (): void => {
   registerI18nHandlers()
   registerDialogHandlers()
   registerDiagramHandlers()
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel
+  registerWorkspaceHandlers()
+  // [CUSTOM-END] CUSTOM-20261009-001
 }

@@ -206,6 +206,12 @@
       "moveToTrash": "Mover a la Papelera",
       "showInFolder": "Mostrar en Carpeta"
     },
+    "workspace": {
+      "addFolder": "Añadir carpeta al espacio de trabajo",
+      "removeFolder": "Quitar carpeta del espacio de trabajo",
+      "saveWorkspace": "Guardar espacio de trabajo",
+      "saveWorkspaceAs": "Guardar espacio de trabajo como..."
+    },
     "tabs": {
       "close": "Cerrar",
       "closeOthers": "Cerrar otros",
@@ -260,12 +266,29 @@
       "readError": "No se pudo leer el directorio.",
       "retry": "Reintentar"
     },
+    "workspace": {
+      "title": "Espacio de trabajo",
+      "noWorkspace": "No hay ningún espacio de trabajo abierto.",
+      "open": "Abrir espacio de trabajo",
+      "addFolder": "Añadir carpeta",
+      "save": "Guardar",
+      "saveAs": "Guardar como...",
+      "close": "Cerrar espacio de trabajo",
+      "openRecent": "Abrir reciente",
+      "noRecent": "No hay espacios de trabajo recientes",
+      "clearRecent": "Borrar recientes",
+      "refresh": "Actualizar",
+      "loading": "Cargando...",
+      "readError": "No se pudo leer esta carpeta.",
+      "unsaved": "Cambios sin guardar"
+    },
     "icons": {
       "files": "Archivos",
       "search": "Buscar",
       "toc": "Tabla de Contenidos",
       "currentDir": "Directorio actual",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "workspace": "Espacio de trabajo"
     }
   },
   "commandPalette": {

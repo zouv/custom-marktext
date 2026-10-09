@@ -60,6 +60,9 @@ import { usePreferencesStore } from '@/store/preferences'
 import { useEditorStore } from '@/store/editor'
 import { useCommandCenterStore } from '@/store/commandCenter'
 import { useProjectStore } from '@/store/project'
+// [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root workspace panel
+import { useWorkspaceStore } from '@/store/workspace'
+// [CUSTOM-END] CUSTOM-20261009-001
 import { useAutoUpdatesStore } from '@/store/autoUpdates'
 import { useNotificationStore } from '@/store/notification'
 
@@ -68,6 +71,9 @@ const editorStore = useEditorStore()
 const preferencesStore = usePreferencesStore()
 const layoutStore = useLayoutStore()
 const projectStore = useProjectStore()
+// [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root workspace panel
+const workspaceStore = useWorkspaceStore()
+// [CUSTOM-END] CUSTOM-20261009-001
 const listenForMainStore = useListenForMainStore()
 const autoUpdateStore = useAutoUpdatesStore()
 const commandCenterStore = useCommandCenterStore()
@@ -172,6 +178,10 @@ onMounted(async () => {
   projectStore.LISTEN_FOR_UPDATE_PROJECT()
   projectStore.LISTEN_FOR_LOAD_PROJECT()
   projectStore.LISTEN_FOR_SIDEBAR_CONTEXT_MENU()
+  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root workspace panel
+  workspaceStore.LISTEN_FOR_WORKSPACE()
+  workspaceStore.RESTORE_SESSION()
+  // [CUSTOM-END] CUSTOM-20261009-001
   autoUpdateStore.LISTEN_FOR_UPDATE()
   preferencesStore.ASK_FOR_USER_PREFERENCE()
   preferencesStore.LISTEN_TOGGLE_VIEW()
