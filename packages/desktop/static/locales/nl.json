@@ -206,6 +206,12 @@
       "moveToTrash": "Naar prullenbak",
       "showInFolder": "Tonen in map"
     },
+    "workspace": {
+      "addFolder": "Map toevoegen aan werkruimte",
+      "removeFolder": "Map uit werkruimte verwijderen",
+      "saveWorkspace": "Werkruimte opslaan",
+      "saveWorkspaceAs": "Werkruimte opslaan als..."
+    },
     "tabs": {
       "close": "Sluiten",
       "closeOthers": "Andere sluiten",
@@ -260,12 +266,29 @@
       "readError": "De map kon niet worden gelezen.",
       "retry": "Opnieuw proberen"
     },
+    "workspace": {
+      "title": "Werkruimte",
+      "noWorkspace": "Geen werkruimte geopend.",
+      "open": "Werkruimte openen",
+      "addFolder": "Map toevoegen",
+      "save": "Opslaan",
+      "saveAs": "Opslaan als...",
+      "close": "Werkruimte sluiten",
+      "openRecent": "Recent openen",
+      "noRecent": "Geen recente werkruimten",
+      "clearRecent": "Recente werkruimten wissen",
+      "refresh": "Vernieuwen",
+      "loading": "Laden...",
+      "readError": "Kan deze map niet lezen.",
+      "unsaved": "Niet-opgeslagen wijzigingen"
+    },
     "icons": {
       "files": "Bestanden",
       "search": "Zoeken",
       "toc": "Inhoudsopgave",
       "currentDir": "Huidige map",
-      "settings": "Instellingen"
+      "settings": "Instellingen",
+      "workspace": "Werkruimte"
     }
   },
   "commandPalette": {

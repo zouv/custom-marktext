@@ -42,18 +42,19 @@ packages/muya/src/
 
 ## 0.5 任务作用域路由（先定范围，避免污染上下文）
 
-| 任务类型                      | 该读（仅限）                                                                                                        | 可忽略             | 入口 |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------ | ---- |
-| 偏好设置（加新选项/改默认值） | `main/preferences/schema.json` + `renderer/src/prefComponents/<分区>/` + `renderer/src/store/preferences.ts`        | muya 内部、website | §2.1 |
-| 快捷键（菜单/键位）           | `main/keyboard/keybindings{Darwin,Linux,Windows}.ts` + `common/keybinding/index.ts` + `prefComponents/keybindings/` | 导出、website      | §2.2 |
-| 编辑行为（输入/换行/删除）    | `muya/src/block/<块类型>/` + `muya/src/editor/index.ts`                                                             | main、菜单         | §2.3 |
-| Markdown 语法/渲染            | `muya/src/state/` + `muya/src/inlineRenderer/` + `muya/src/block/`                                                  | preferences UI     | §2.4 |
-| 新块类型/新语法元素           | `muya/src/block/`（新类 + `block/index.ts` 注册）+ `state/markdownToState.ts`                                       | 窗口、快捷键       | §2.3 |
-| 文件打开/保存/标签页          | `main/commands/{file,tab}.ts` + `main/filesystem/` + `renderer/src/components/editorWithTabs/`                      | muya 内部          | §2.5 |
-| IPC 新通道                    | `desktop/src/shared/types/ipc.ts` + `main/ipc/<域>.ts` + `preload/index.ts` + renderer 调用方                       | website、muya      | §2.6 |
-| 窗口/标题栏/主题              | `main/windows/` + `renderer/src/components/titleBar/` + `common/theme.ts`                                           | muya、文件命令     | §2.7 |
-| i18n 文案                     | `static/locales/<lang>.json` + `docs/i18n/`（README 翻译，与 locales 无关）                                         | 全部代码           | §2.8 |
-| 打包/发布                     | `desktop/electron-builder.yml` + 根 `package.json` scripts + `scripts/`                                             | 全部业务代码       | §2.9 |
+| 任务类型                       | 该读（仅限）                                                                                                                                                                               | 可忽略                                  | 入口 |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- | ---- |
+| 偏好设置（加新选项/改默认值）  | `main/preferences/schema.json` + `renderer/src/prefComponents/<分区>/` + `renderer/src/store/preferences.ts`                                                                               | muya 内部、website                      | §2.1 |
+| 快捷键（菜单/键位）            | `main/keyboard/keybindings{Darwin,Linux,Windows}.ts` + `common/keybinding/index.ts` + `prefComponents/keybindings/`                                                                        | 导出、website                           | §2.2 |
+| 编辑行为（输入/换行/删除）     | `muya/src/block/<块类型>/` + `muya/src/editor/index.ts`                                                                                                                                    | main、菜单                              | §2.3 |
+| Markdown 语法/渲染             | `muya/src/state/` + `muya/src/inlineRenderer/` + `muya/src/block/`                                                                                                                         | preferences UI                          | §2.4 |
+| 新块类型/新语法元素            | `muya/src/block/`（新类 + `block/index.ts` 注册）+ `state/markdownToState.ts`                                                                                                              | 窗口、快捷键                            | §2.3 |
+| 文件打开/保存/标签页           | `main/commands/{file,tab}.ts` + `main/filesystem/` + `renderer/src/components/editorWithTabs/`                                                                                             | muya 内部                               | §2.5 |
+| IPC 新通道                     | `desktop/src/shared/types/ipc.ts` + `main/ipc/<域>.ts` + `preload/index.ts` + renderer 调用方                                                                                              | website、muya                           | §2.6 |
+| 窗口/标题栏/主题               | `main/windows/` + `renderer/src/components/titleBar/` + `common/theme.ts`                                                                                                                  | muya、文件命令                          | §2.7 |
+| i18n 文案                      | `static/locales/<lang>.json` + `docs/i18n/`（README 翻译，与 locales 无关）                                                                                                                | 全部代码                                | §2.8 |
+| 多目录工作区（Workspace 面板） | `main/workspace/` + `main/ipc/workspace.ts` + `renderer/src/store/workspace.ts` + `renderer/src/components/sideBar/workspace{Panel,TreeFolder,TreeFile}.vue` + `shared/types/workspace.ts` | 单根 projectStore / 上游 watcher / 菜单 | §3.2 |
+| 打包/发布                      | `desktop/electron-builder.yml` + 根 `package.json` scripts + `scripts/`                                                                                                                    | 全部业务代码                            | §2.9 |
 
 > 定位优先级：**函数名 grep > 本表**。表过期时以代码为准并顺手订正本表。muya 自成体系：改 muya 前先读 `packages/muya/AGENTS.md`。
 
@@ -74,6 +75,10 @@ packages/muya/src/
 | `packages/desktop/src/shared/types/ipc.ts`                     | IPC 通道契约（`mt::` 前缀）                              | 新通道三处同步改               |
 | `packages/desktop/src/preload/index.ts`                        | contextBridge 暴露面                                     | 同上                           |
 | `packages/desktop/src/renderer/src/store/`                     | Pinia：editor/preferences/layout/project/…               | UI 状态                        |
+| `packages/desktop/src/main/workspace/`                         | 多根工作区主进程模块（file/reader/watcher/session）      | Workspace 面板（§3.2）         |
+| `packages/desktop/src/main/ipc/workspace.ts`                   | Workspace IPC 处理器 + 每窗口 watcher/会话               | 同上                           |
+| `packages/desktop/src/shared/types/workspace.ts`               | Workspace 共享类型与 `.mt-workspace` 契约                | 同上                           |
+| `packages/desktop/src/renderer/src/store/workspace.ts`         | Workspace Pinia store（多根 + 每根树，独立于 project）   | 同上                           |
 | `packages/desktop/src/renderer/src/prefComponents/<分区>/`     | 偏好设置页各分区（general/editor/markdown/…）            | 偏好 UI                        |
 | `packages/desktop/src/renderer/src/components/editorWithTabs/` | 编辑器主体 + 标签页                                      | 编辑区 UI                      |
 | `packages/desktop/static/locales/*.json`                       | 11 种界面语言文案                                        | 新 UI 文案（en+zh-CN 起步）    |
@@ -133,13 +138,15 @@ packages/muya/src/
 | 文件系统工具      | `main/filesystem/` + `src/common/filesystem/`                      |                                           |
 | 最近文件/窗口状态 | `main/dataCenter/`（schema.json 定持久化键）                       |                                           |
 | 同目录文件浏览    | `renderer/src/components/sideBar/currentDir.vue`                   | CUSTOM-20260909-001；见 §3.1              |
+| 多根工作区        | `main/workspace/` + `renderer/src/store/workspace.ts`              | CUSTOM-20261009-001；见 §3.2              |
 
 ### 2.6 IPC 通道
 
-| 我要改的东西 | 关键锚点                                                                                                | 备注                         |
-| ------------ | ------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| 新通道       | `shared/types/ipc.ts`（契约）→ `main/ipc/<域>.ts`（handler）→ `preload/index.ts`（暴露）→ renderer 调用 | 四处同步；通道名 `mt::` 前缀 |
-| 现有通道目录 | `main/ipc/{fs,window,cmd,paths,fonts,i18n,shell,uploader,ripgrep}.ts`                                   |                              |
+| 我要改的东西   | 关键锚点                                                                                                                   | 备注                         |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 新通道         | `shared/types/ipc.ts`（契约）→ `main/ipc/<域>.ts`（handler）→ `preload/index.ts`（暴露）→ renderer 调用                    | 四处同步；通道名 `mt::` 前缀 |
+| 现有通道目录   | `main/ipc/{fs,window,cmd,paths,fonts,i18n,shell,uploader,ripgrep}.ts`                                                      |                              |
+| Workspace 通道 | `mt::workspace::{open,save,pick-folders,set-roots,refresh-root,get-roots-status,get-session,set-session,close,tree-event}` | CUSTOM-20261009-001；§3.2    |
 
 ### 2.7 窗口/标题栏/主题
 
@@ -183,6 +190,28 @@ packages/muya/src/
   - `pnpm run build:unpack` 只编译 `out/`，不刷新 `dist/win-unpacked/`——端到端前必须 `manager.sh unpacked` 重打包，否则测的是旧包；
   - 上游目录下纯新增文件（如 `sideBar/currentDir.vue`）无需 CUSTOM 标记，registry 总览用聚合行 `DIR/（file 新增）` 登记才能过 check-registry §2；
   - locale 新键必须 11 语言全补（`locale-validation.spec.ts` 强制键 parity；004 当时漏 9 语言是历史欠账，本轮已清）。
+
+---
+
+### 3.2 侧栏「工作区」多目录面板（CUSTOM-20261009-001）
+
+- **需求语义**：VSCode 式多根目录——多个文件夹并列展示、配置存 `.mt-workspace`、可打开/保存/关闭。
+- **设计基线（独立并行）**：**不改**单根 projectStore / treeCtrl / `EditorWindow._openedRootDirectory` / 上游 `watcher.ts`。搜索、Ctrl+P、图片相对路径仍只认 Files 面板的单根。
+- **挂载链**：`sideBar/help.ts` sideBarIcons 第 5 项（id `workspace`）→ `handleLeftIconClick` → `layout.SET_LAYOUT({rightColumn:'workspace'})` → `sideBar/index.vue` `v-else-if` 渲染 `workspacePanel.vue`。`rightColumn` 无白名单，值随 buffered layout 持久化。
+- **渲染层数据链**：`store/workspace.ts` 持有 `rootStates[{path,name,tree}]`；初次由 `mt::workspace::set-roots`（批量递归读取）返回每个根的完整快照；增量由 `mt::workspace::tree-event` 推送，用 **现有 `store/treeCtrl` 助手按根路由**（`addFile/unlinkFile/addDirectory/unlinkDirectory/updateFileMtime/resortTree`），根用 `WorkspaceTreeFolderNode.pathname` 传入即可；早于快照到达的事件按根缓冲（仿 `projectStore.pendingTreeEvents`）。`store/workspace.ts` 在 `app.vue` onMounted 注册监听 + `RESTORE_SESSION()`。
+- **主进程链**：`main/ipc/workspace.ts::registerWorkspaceHandlers()`（经 `main/ipc/index.ts` 的 `registerSandboxIpcHandlers()` 注册，**早于 Accessor**，故模块自包含不依赖 preferences/windowManager）。每窗口一个 `WorkspaceWatcher`（`main/workspace/watcher.ts`，独立 chokidar → 专用通道）；`set-roots` 时增量 reconcile（只读新增根的快照）。窗口清理靠模块自行 `app.on('browser-window-created')` 挂 `closed`。
+- **文件格式**：`.mt-workspace` = `{version,name,folders:[{path,name?}],settings}`（`main/workspace/file.ts` 解析/校验/序列化）；**写入一律存绝对路径**（相对存储的基准会随文件移动而失效，见下方坑）；读取时绝对路径直接用，相对路径按「工作区文件所在目录 → 卷根」候选序列取第一个存在的（`resolveEntryCandidates`）。原子写复用 `main/filesystem/index.ts::writeFile`。
+- **最近打开**：`main/workspace/recents.ts` 维护 `userData/workspace-recents.json`（MRU 去重、上限 12、读时过滤已不存在项）；`open`/`save` 成功即记录；面板工具栏「最近打开」下拉 + 清除记录（`mt::workspace::get-recents` / `mt::workspace::clear-recents`）。
+- **会话持久化**：`userData/workspaceStates/<restoreBufferId>_workspace.json`（`main/workspace/session.ts`，`write-file-atomic`），启动时渲染层 `get-session` 拉取；**不 hook** `update-buffer-state`，**不改** `editorBufferStore` / `editor.ts::_restoreAllState`。
+- **写回**：有后备文件时增删根即写回；无后备文件时留内存并标 dirty，由「保存」触发另存为。
+- **右键菜单**：`contextMenu/workspace/index.ts` 直接调 `popupContextMenu` + 自建菜单项，**不经** `contextMenu/sideBar`（后者全部动作走 projectStore，会与 Files 面板串扰）；文件操作复用 `util/fileSystem.ts` 的 `create/rename/paste` + `mt::fs-trash-item` + `shell.showItemInFolder/openPath`。
+- **坑**：
+  - 上游 `watcher.ts` 的事件通道写死在 5 处，改造成本高且散布自定义块——故新写独立 watcher，代价是重复约 20–40 行忽略/轮询逻辑；
+  - 上游 `treeFolder/treeFile.vue` 深度耦合 projectStore，只能 fork（去掉 rename/create/clipboard 的 bus 事件，否则与 Files 面板串扰）；
+  - `help.ts` 追加图标项时，上一项（currentDir）是数组末项无逗号，需把逗号移到 `[CUSTOM-END]` 边界；
+  - 本地 `dev` 读 `*.min.json`，改 locale 后必须跑 `pnpm run minify-locales`（pitfalls #10）；
+  - 本仓库禁 `void` 操作符（ESLint `no-void`），fire-and-forget 用 `.catch()` 或直接调用（`no-floating-promises` 未启用）；
+  - **不要把工作区目录存成相对路径**：`.code-workspace` 的相对语义要求文件长期待在路径基准目录里，而本仓库的工作区文件是集中存放的（项目在别处），文件一移动相对基准即静默失效（用户实测踩到）；存绝对路径 + 读取回退是唯一稳的解法。
 
 ---
 

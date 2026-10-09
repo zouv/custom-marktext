@@ -157,3 +157,23 @@
   - `EPERM rename` 是 Windows 打包的常态（杀软/索引器占用刚解压的 exe），正确应对是**清掉 `.tmp` 残骸 + 真实等待后重试**，而不是反复立刻重跑；
   - 打包脚本的健壮性检查要包含"从 Git Bash 跑"和"从 cmd 跑"两条路径——本仓库的调用入口（`manager.sh`）恰好是前者。
 - **验证**：两处修复后重跑 `build-unpacked.bat --skip-build`，日志出现真实 15s 间隔的重试（且重试前打印清理动作），最终 `EXIT=0`、`[SUCCESS] unpacked build finished.`，产物 `dist/win-unpacked/marktext.exe`（226 MB）生成，`FileVersion = 0.20.0-custom.3`。
+
+---
+
+## 12. 想"复用"侧栏文件树的组件/监视器，实际都耦合到单根 projectStore —— 新面板只能 fork
+
+- **日期**：2026-10-09（新增 Workspace 多目录面板 CUSTOM-20261009-001 时）
+- **现象**：计划"复用现有树组件与 watcher，少写点代码"，实际逐个撞墙：
+  - `components/sideBar/treeFolder.vue` / `treeFile.vue` 深度耦合 `useProjectStore()`（`createCache`/`renameCache`/`activeItem`/`clipboard` + `CREATE_FILE_DIRECTORY`/`RENAME_IN_SIDEBAR`），且通过**进程全局 bus**（`SIDEBAR::show-new-input`/`show-rename-input`）通信；
+  - `main/filesystem/watcher.ts` 的事件通道实际写死在 5 处（`EVENT_NAME` + 4 处字面量），且 `add/unlink/change/addDir/unlinkDir` 是模块级函数、按 `win`+`type` 位置传参；
+  - `renderer/src/util/fileSystem.ts` 的 `create/rename/paste` 反而是**完全 store 无关**的（纯 `window.fileUtils.*` 转发）——唯一可直接复用的部分。
+- **根因**：这些"通用"组件/模块都是围绕**单一 project store / 单一根目录**长出来的，耦合点不在数据结构而在 store 与全局 bus；`watcher.ts` 则把通道名当常量内联，没有注入点。
+- **解法**：
+  - 树组件 **fork** 精简版（`workspaceTreeFolder/File.vue`），输入态放自己的 store，**不复用 bus**（同一 bus 事件名会让 Workspace 的重命名同时点亮 Files 面板的输入框）；
+  - watcher **另写独立实现**，不改上游 `watcher.ts`（代价：重复约 20–40 行忽略/轮询逻辑，换来上游文件逐字节一致、合并零冲突）；
+  - 可直接复用的只有：`util/fileSystem.ts` 的 fs 原语、`contextMenu/popupMenu.ts` 的菜单渲染器、`store/treeCtrl.ts` 的树变更助手（它们都以参数接收目标，无 store 依赖）。
+- **教训**：
+  - **"能不能复用"要看它依赖 store 还是依赖参数**：依赖参数的可复用（treeCtrl/popupMenu/fileSystem），依赖 store/bus 的只能 fork；
+  - 新增独立面板前先 grep 目标组件的 `useXxxStore()` 与 `bus.on/emit`，能省掉一轮返工；
+  - 本仓库 **ESLint 禁 `void` 操作符**（`no-void`），fire-and-forget 不要用 `void foo()`，直接调用或 `.catch()`（`no-floating-promises` 未启用，不会因此报错）。
+- **验证**：Workspace 面板实现后 `pnpm run lint` 新文件 0 error / 0 warning；上游 `main/filesystem/watcher.ts`、`components/sideBar/treeFolder.vue`、`treeFile.vue`、`store/project.ts`、`store/treeCtrl.ts` 在本轮 **零改动**（`git diff` 为空）。

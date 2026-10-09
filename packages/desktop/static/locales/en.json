@@ -206,6 +206,12 @@
       "moveToTrash": "Move To Trash",
       "showInFolder": "Show In Folder"
     },
+    "workspace": {
+      "addFolder": "Add Folder to Workspace",
+      "removeFolder": "Remove Folder from Workspace",
+      "saveWorkspace": "Save Workspace",
+      "saveWorkspaceAs": "Save Workspace As..."
+    },
     "tabs": {
       "close": "Close",
       "closeOthers": "Close others",
@@ -260,12 +266,29 @@
       "readError": "Failed to read the directory.",
       "retry": "Retry"
     },
+    "workspace": {
+      "title": "Workspace",
+      "noWorkspace": "No workspace opened.",
+      "open": "Open Workspace",
+      "addFolder": "Add Folder",
+      "save": "Save",
+      "saveAs": "Save As...",
+      "close": "Close Workspace",
+      "openRecent": "Open Recent",
+      "noRecent": "No recent workspaces",
+      "clearRecent": "Clear Recent Workspaces",
+      "refresh": "Refresh",
+      "loading": "Loading...",
+      "readError": "Failed to read this folder.",
+      "unsaved": "Unsaved changes"
+    },
     "icons": {
       "files": "Files",
       "search": "Search",
       "toc": "Table of Contents",
       "currentDir": "Current Directory",
-      "settings": "Settings"
+      "settings": "Settings",
+      "workspace": "Workspace"
     }
   },
   "commandPalette": {

@@ -206,6 +206,12 @@
       "moveToTrash": "휴지통으로 이동",
       "showInFolder": "폴더에서 보기"
     },
+    "workspace": {
+      "addFolder": "워크스페이스에 폴더 추가",
+      "removeFolder": "워크스페이스에서 폴더 제거",
+      "saveWorkspace": "워크스페이스 저장",
+      "saveWorkspaceAs": "다른 이름으로 워크스페이스 저장..."
+    },
     "tabs": {
       "close": "닫기",
       "closeOthers": "다른 탭 닫기",
@@ -260,12 +266,29 @@
       "readError": "디렉터리를 읽지 못했습니다.",
       "retry": "다시 시도"
     },
+    "workspace": {
+      "title": "워크스페이스",
+      "noWorkspace": "열린 워크스페이스가 없습니다.",
+      "open": "워크스페이스 열기",
+      "addFolder": "폴더 추가",
+      "save": "저장",
+      "saveAs": "다른 이름으로 저장...",
+      "close": "워크스페이스 닫기",
+      "openRecent": "최근 항목 열기",
+      "noRecent": "최근 워크스페이스 없음",
+      "clearRecent": "최근 기록 지우기",
+      "refresh": "새로 고침",
+      "loading": "불러오는 중...",
+      "readError": "이 폴더를 읽지 못했습니다.",
+      "unsaved": "저장되지 않은 변경 사항"
+    },
     "icons": {
       "files": "파일",
       "search": "검색",
       "toc": "목차",
       "currentDir": "현재 디렉터리",
-      "settings": "설정"
+      "settings": "설정",
+      "workspace": "워크스페이스"
     }
   },
   "commandPalette": {

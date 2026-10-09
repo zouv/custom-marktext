@@ -206,6 +206,12 @@
       "moveToTrash": "ごみ箱に移動",
       "showInFolder": "フォルダーの表示"
     },
+    "workspace": {
+      "addFolder": "ワークスペースにフォルダーを追加",
+      "removeFolder": "ワークスペースからフォルダーを削除",
+      "saveWorkspace": "ワークスペースを保存",
+      "saveWorkspaceAs": "ワークスペースに名前を付けて保存..."
+    },
     "tabs": {
       "close": "閉じる",
       "closeOthers": "他を閉じる",
@@ -260,12 +266,29 @@
       "readError": "ディレクトリの読み取りに失敗しました。",
       "retry": "再試行"
     },
+    "workspace": {
+      "title": "ワークスペース",
+      "noWorkspace": "ワークスペースが開かれていません。",
+      "open": "ワークスペースを開く",
+      "addFolder": "フォルダーを追加",
+      "save": "保存",
+      "saveAs": "名前を付けて保存...",
+      "close": "ワークスペースを閉じる",
+      "openRecent": "最近開いたもの",
+      "noRecent": "最近のワークスペースはありません",
+      "clearRecent": "最近の記録を消去",
+      "refresh": "更新",
+      "loading": "読み込み中...",
+      "readError": "このフォルダーを読み取れませんでした。",
+      "unsaved": "未保存の変更"
+    },
     "icons": {
       "files": "ファイル",
       "search": "検索",
       "toc": "目次",
       "currentDir": "現在のディレクトリ",
-      "settings": "設定"
+      "settings": "設定",
+      "workspace": "ワークスペース"
     }
   },
   "commandPalette": {
