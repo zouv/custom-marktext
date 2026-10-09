@@ -1,10 +1,10 @@
 ---
 current_upstream_version: 'v0.20.0'
 current_upstream_commit: '53226af919aa89e7b5e3b64aec18fa053967796f'
-custom_version: 'v0.20.0-custom.3'
+custom_version: 'v0.20.0-custom.4'
 last_merge_date: '2026-10-08'
-last_release_version: 'v0.20.0-custom.3'
-last_release_date: '2026-10-08'
+last_release_version: 'v0.20.0-custom.4'
+last_release_date: '2026-10-09'
 vendor_branch: 'vendor/v0.20.x'
 upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
@@ -87,6 +87,17 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
 
 ## 变更日志
+
+### 2026-10-09 - CUSTOM-20261009-003（发布 v0.20.0-custom.4）
+
+- **功能**：发布 v0.20.0-custom.4 —— **首个正式版（非预发布）**
+- **改动文件**：packages/desktop/package.json（version 0.20.0-custom.3 → 0.20.0-custom.4）、CUSTOMIZATIONS/registry.md（frontmatter + 本条目）、CUSTOMIZATIONS/release-notes/v0.20.0-custom.4.md（新增）
+- **详细说明**：
+  - 基线为上游**正式 tag** `v0.20.0`（2026-10-02 发布）；此前 custom.1~3 均为预发布，本版起标记为正式 release（推 tag 走 CI 全平台构建，`publish-release.mjs` **不传** `--prerelease`）
+  - 内容 = v0.20.0-custom.3 + 多目录工作区面板（CUSTOM-20261009-001/002）
+  - 发布路径（方案 A）：推 tag 触发上游 `release.yml` 全平台构建 → CI 创建 release 并覆盖正文 → `publish-release.mjs --body-only --wait` 把正文改回本仓库 release notes（pitfalls #7）
+- **验证方式**：发布前 `pnpm run lint` 0 error / `pnpm run typecheck` 通过 / `pnpm run test` 985 通过 0 失败 36 跳过 / `pnpm run build:unpack` 通过；发布后核对 release `draft=false`、`prerelease=false`、资产全部 `uploaded`
+- **基于上游版本**：v0.20.0
 
 ### 2026-10-09 - CUSTOM-20261009-002（Workspace：路径存储修正 + 最近打开）
 
