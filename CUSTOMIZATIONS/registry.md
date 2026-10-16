@@ -1,10 +1,10 @@
 ---
 current_upstream_version: 'v0.20.0'
 current_upstream_commit: '53226af919aa89e7b5e3b64aec18fa053967796f'
-custom_version: 'v0.20.0-custom.4'
+custom_version: 'v0.20.0-custom.5'
 last_merge_date: '2026-10-08'
-last_release_version: 'v0.20.0-custom.4'
-last_release_date: '2026-10-09'
+last_release_version: 'v0.20.0-custom.5'
+last_release_date: '2026-10-16'
 vendor_branch: 'vendor/v0.20.x'
 upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
@@ -92,6 +92,17 @@ upstream_remote: 'https://github.com/marktext/marktext.git'
 ---
 
 ## 变更日志
+
+### 2026-10-16 - CUSTOM-20261016-003（发布 v0.20.0-custom.5）
+
+- **功能**：发布 v0.20.0-custom.5
+- **改动文件**：packages/desktop/package.json（version 0.20.0-custom.4 → 0.20.0-custom.5）、CUSTOMIZATIONS/registry.md（frontmatter + 本条目）、CUSTOMIZATIONS/release-notes/v0.20.0-custom.5.md（新增）
+- **详细说明**：
+  - 内容 = v0.20.0-custom.4 + 当前目录面板升级为懒加载目录树 + 固定目录（CUSTOM-20261016-001/002，含面板顶部与标题栏重叠修复、pin 勾选修复）
+  - 正式版（非预发布）：延续 custom.4 起的不标 prerelease 约定
+  - 发布路径（方案 A）：推 tag 触发上游 release.yml 全平台构建 → CI 创建 release 并覆盖正文 → `publish-release.mjs --body-only --wait` 把正文改回本仓库 release notes（pitfalls #7）；正式版不传 `--prerelease`
+- **验证方式**：发布前 `pnpm run lint` 0 error / `pnpm run typecheck` 通过 / `pnpm run test` 999 通过 0 失败 36 跳过 / `pnpm run build:unpack` 通过；发布后核对 release `draft=false`、`prerelease=false`、资产全部 `uploaded`
+- **基于上游版本**：v0.20.0
 
 ### 2026-10-16 - CUSTOM-20261016-002（当前目录面板加 pin 固定 + 图标交换）
 
