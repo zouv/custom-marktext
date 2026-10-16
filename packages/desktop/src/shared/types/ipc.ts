@@ -44,6 +44,9 @@ import type {
   WorkspaceTreeEvent
 } from './workspace'
 // [CUSTOM-END] CUSTOM-20261009-001
+// [CUSTOM-BEGIN] CUSTOM-20261016-001 - side bar "current directory" tree
+import type { CurrentDirEntry } from './currentDir'
+// [CUSTOM-END] CUSTOM-20261016-001
 
 export interface SaveDialogRequest {
   title?: string
@@ -109,6 +112,9 @@ export interface IpcInvokeChannels {
   'mt::uploader::upload': { args: [req: unknown]; ret: unknown }
   'mt::win::is-fullscreen': { args: []; ret: boolean }
   'mt::win::is-maximized': { args: []; ret: boolean }
+  // [CUSTOM-BEGIN] CUSTOM-20261016-001 - side bar "current directory" tree (invoke)
+  'mt::currentdir::read': { args: [dirPath: string]; ret: CurrentDirEntry[] }
+  // [CUSTOM-END] CUSTOM-20261016-001
   // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel (invoke)
   'mt::workspace::get-recents': { args: []; ret: string[] }
   'mt::workspace::get-session': { args: []; ret: WorkspaceSession | null }

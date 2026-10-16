@@ -13,6 +13,9 @@ import { registerDiagramHandlers } from './diagram'
 // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel
 import { registerWorkspaceHandlers } from './workspace'
 // [CUSTOM-END] CUSTOM-20261009-001
+// [CUSTOM-BEGIN] CUSTOM-20261016-001 - side bar "current directory" tree
+import { registerCurrentDirHandlers } from './currentDir'
+// [CUSTOM-END] CUSTOM-20261016-001
 
 export const registerSandboxIpcHandlers = (): void => {
   registerBootInfo()
@@ -30,4 +33,7 @@ export const registerSandboxIpcHandlers = (): void => {
   // [CUSTOM-BEGIN] CUSTOM-20261009-001 - multi-root Workspace panel
   registerWorkspaceHandlers()
   // [CUSTOM-END] CUSTOM-20261009-001
+  // [CUSTOM-BEGIN] CUSTOM-20261016-001 - side bar "current directory" tree
+  registerCurrentDirHandlers()
+  // [CUSTOM-END] CUSTOM-20261016-001
 }

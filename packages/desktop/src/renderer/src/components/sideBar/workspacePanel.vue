@@ -210,6 +210,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
+  padding-top: var(--titleBarHeight);
   overflow: hidden;
 }
 .title {

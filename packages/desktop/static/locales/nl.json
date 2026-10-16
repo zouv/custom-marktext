@@ -264,7 +264,9 @@
       "empty": "Geen Markdown-bestanden in deze map.",
       "noDirectory": "Sla het bestand op om de map te bekijken.",
       "readError": "De map kon niet worden gelezen.",
-      "retry": "Opnieuw proberen"
+      "retry": "Opnieuw proberen",
+      "pin": "Map vastzetten",
+      "pinHint": "Vink aan om de mappenstructuur vast te zetten bij het wisselen van bestand"
     },
     "workspace": {
       "title": "Werkruimte",

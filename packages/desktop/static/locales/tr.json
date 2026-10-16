@@ -264,7 +264,9 @@
       "empty": "Bu dizinde Markdown dosyası yok.",
       "noDirectory": "Dizini görmek için dosyayı kaydedin.",
       "readError": "Dizin okunamadı.",
-      "retry": "Yeniden dene"
+      "retry": "Yeniden dene",
+      "pin": "Dizini sabitle",
+      "pinHint": "Dosya değiştirirken dizin yapısını sabitlemek için işaretleyin"
     },
     "workspace": {
       "title": "Çalışma Alanı",

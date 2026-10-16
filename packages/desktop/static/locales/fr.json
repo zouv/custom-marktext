@@ -264,7 +264,9 @@
       "empty": "Aucun fichier Markdown dans ce répertoire.",
       "noDirectory": "Enregistrez le fichier pour afficher son répertoire.",
       "readError": "Impossible de lire le répertoire.",
-      "retry": "Réessayer"
+      "retry": "Réessayer",
+      "pin": "Épingler le répertoire",
+      "pinHint": "Cochez pour figer la structure du répertoire lors du changement de fichier"
     },
     "workspace": {
       "title": "Espace de travail",

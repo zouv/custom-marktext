@@ -2,10 +2,10 @@ import {
   Folder as FilesIcon,
   Search as SearchIcon,
   Memo as TocIcon,
-  Files as CurrentDirIcon,
-  // [CUSTOM-BEGIN] CUSTOM-20261009-001 - workspace panel icon
-  FolderOpened as WorkspaceIcon,
-  // [CUSTOM-END] CUSTOM-20261009-001
+  // [CUSTOM-BEGIN] CUSTOM-20261016-002 - swap currentDir/workspace sidebar icons
+  FolderOpened as CurrentDirIcon,
+  Files as WorkspaceIcon,
+  // [CUSTOM-END] CUSTOM-20261016-002
   Setting as SettingIcon
 } from '@element-plus/icons-vue'
 import { t } from '@/i18n'

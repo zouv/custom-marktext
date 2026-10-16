@@ -177,3 +177,38 @@
   - 新增独立面板前先 grep 目标组件的 `useXxxStore()` 与 `bus.on/emit`，能省掉一轮返工；
   - 本仓库 **ESLint 禁 `void` 操作符**（`no-void`），fire-and-forget 不要用 `void foo()`，直接调用或 `.catch()`（`no-floating-promises` 未启用，不会因此报错）。
 - **验证**：Workspace 面板实现后 `pnpm run lint` 新文件 0 error / 0 warning；上游 `main/filesystem/watcher.ts`、`components/sideBar/treeFolder.vue`、`treeFile.vue`、`store/project.ts`、`store/treeCtrl.ts` 在本轮 **零改动**（`git diff` 为空）。
+
+---
+
+## 13. `mt::fs::readdir` 只返回裸文件名数组 —— 想显示目录结构必须另开通道
+
+- **日期**：2026-10-16（把侧栏「当前目录」面板从平铺列表改成目录树 CUSTOM-20261016-001 时）
+- **现象**：面板要显示「目录 + 文件」的树，但 `window.fileUtils.readdir(p)`（`main/ipc/fs.ts` 的 `mt::fs::readdir` → `fs.readdir(p)`）返回的是 `string[]` 文件名数组，**没有任何类型信息**：
+  - 想区分目录只能补一层 `mt::fs::is-directory` / `mt::fs::stat`——每条目一次 IPC，一个 200 条的目录就是 200 次往返；
+  - 想「目录优先、文件按扩展名过滤」也做不到，因为连哪个是目录都不知道（当时还靠 `hasMarkdownExtension` 过滤，导致名字不以 md 结尾的目录被一起滤掉）。
+- **根因**：`fs.readdir` 的默认形态就是裸名数组；带类型的版本是 `fs.readdir(p, { withFileTypes: true })`（返回 `Dirent[]`，`dirent.isDirectory()` 无需再 stat）。上游当初只需要文件名，所以没有类型信息。
+- **解法**：
+  - **不改上游通道**（`mt::fs::readdir` 语义保持逐字节不变，避免动到其它调用点），新开自包含通道 `mt::currentdir::read`，handler 落在新文件 `main/currentDir/reader.ts` + `main/ipc/currentDir.ts`，返回 `CurrentDirEntry[] = { pathname, name, isDirectory }[]`；
+  - 扫描用 `readdir(dir, { withFileTypes: true })`；符号链接（`entry.isSymbolicLink()` 且非目录）再 `stat` 一次判断，断链 `continue` 跳过而不是让整层失败；
+  - **一次只扫一层**：面板懒加载，展开目录才发一次 IPC，因此不需要递归/深度上限（这是与 Workspace 面板 `reader.ts` 递归快照的关键差别——那边是要一次性铺满整棵树）；
+  - 扫描器不 import electron，是纯函数，可以直接用 `fs.mkdtempSync` 建临时目录做单测（`test/unit/specs/current-dir-reader.spec.ts`）。
+- **教训**：
+  - **先看现有 IPC 返回的数据结构够不够表达需求**，再决定复用还是新开通道："能读目录"不等于"能画出目录树"；
+  - 需要类型信息时优先 `withFileTypes`，别用「列出来后逐条 stat」的 N 次往返方案；
+  - 新通道的自定义 handler 文件放上游目录下（`main/ipc/`、`main/currentDir/`）即可，registry 总览按「纯新增文件 / keep-ours」登记——preload 是泛型桥，**不用改**（见 registry 总览 `shared/types/ipc.ts` 行）。
+- **验证**：`pnpm -C packages/desktop exec vitest run test/unit/specs/current-dir-reader.spec.ts` 6 测全绿（目录优先 / 自然排序 / 白名单外文件过滤 / 忽略目录剪枝 / 不可读目录 reject）；`mt::fs::readdir` 及其它 `main/ipc/fs.ts` handler 本轮零改动。
+
+---
+
+## 14. Vue `<script setup>` 模板里用了组件却漏 import —— vue-tsc/ESLint 都不报错，运行时静默渲染为空
+
+- **日期**：2026-10-16（当前目录面板 CUSTOM-20261016-001 自测时）
+- **现象**：侧栏「当前目录」面板改成目录树后，**目录行能显示、markdown 文件行全部消失**。数据层无异常——store 单测断言 `root.files` 明明有值，`reader.ts` 对真实目录也正确返回文件。
+- **根因**：`currentDirFolder.vue` 的模板里写了 `<current-dir-file>`，但 `<script setup>` 里**忘了 import `CurrentDirFile`**。Vue 3 对「模板里无法解析的组件名」不报错，而是当作原生自定义元素处理，dev 下只在控制台给一条 warning，最终渲染成空标签。目录行能显示是因为 `<current-dir-folder>` 靠 **SFC 文件名自引用**（Vue 3.2+ 对自身文件名隐式注册，无需 import）；文件组件是**另一个文件**，没有这个隐式注册。
+- **为什么工具没拦住**：`vue-tsc` 和 ESLint 默认都不把「模板里未 import 的 kebab-case 标签」当作错误（它可能是合法的 Web Component），所以 typecheck / lint 全绿、单测也绿（单测只测 store 数据，不挂载组件），只有真实渲染才暴露。
+- **解法**：`currentDirFolder.vue` 补 `import CurrentDirFile from './currentDirFile.vue'`。对照 `workspaceTreeFolder.vue` 就是正确写法——它自引用 `<workspace-tree-folder>` 的同时，明确 import 了 `WorkspaceTreeFile`。
+- **教训**：
+  - **递归组件自引用不用 import，但引用兄弟组件必须 import**——改 SFC 模板时逐个数一遍标签：`<a-b>` 若既不是自身文件名、也没有全局注册，就一定得在 `<script setup>` 里 import；
+  - 这类「渲染静默失败」单靠 store 单测测不出来，**组件级验证要挂载真实组件**（本仓库无 `@vue/test-utils`，别为它临时加依赖——手动 `pnpm run dev` 看面板最直接，Electron GUI 无控制台输出见 #3）；
+  - 排查「数据对但 UI 不对」时，先看**组件是否解析成功**，别一头扎进数据链路。
+- **验证**：补 import 后 `pnpm run lint` 0 error / `pnpm run typecheck` 通过 / `pnpm run test` 998 通过；面板文件行恢复正常。

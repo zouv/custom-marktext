@@ -264,7 +264,9 @@
       "empty": "Keine Markdown-Dateien in diesem Verzeichnis.",
       "noDirectory": "Speichere die Datei, um ihr Verzeichnis anzuzeigen.",
       "readError": "Verzeichnis konnte nicht gelesen werden.",
-      "retry": "Erneut versuchen"
+      "retry": "Erneut versuchen",
+      "pin": "Verzeichnis anheften",
+      "pinHint": "Aktivieren, um die Verzeichnisstruktur beim Dateiwechsel zu fixieren"
     },
     "workspace": {
       "title": "Arbeitsbereich",
