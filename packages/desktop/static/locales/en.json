@@ -264,7 +264,9 @@
       "empty": "No Markdown files in this directory.",
       "noDirectory": "Save the file to view its directory.",
       "readError": "Failed to read the directory.",
-      "retry": "Retry"
+      "retry": "Retry",
+      "pin": "Pin directory",
+      "pinHint": "Keep the directory structure when switching files"
     },
     "workspace": {
       "title": "Workspace",

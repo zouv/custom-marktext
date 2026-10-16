@@ -1,75 +1,96 @@
 <template>
   <div class="side-bar-current-dir">
-    <div class="title" :title="dirLabel">
+    <div
+      class="title"
+      :title="dirLabel"
+    >
       <span class="text-overflow">{{ t('sideBar.currentDir.title') }}</span>
-      <a href="javascript:;" :title="t('sideBar.currentDir.refresh')" @click.stop="refresh">
-        <el-icon :size="14"><RefreshRight /></el-icon>
+      <a
+        href="javascript:;"
+        :title="t('sideBar.currentDir.refresh')"
+        @click.stop="refresh"
+      >
+        <el-icon
+          :class="{ 'is-loading': loading }"
+          :size="14"
+        >
+          <RefreshRight />
+        </el-icon>
       </a>
     </div>
-    <div v-if="dirPath" class="dir-header text-overflow" :title="dirPath">
-      {{ dirName }}
+    <div class="pin-bar">
+      <el-tooltip
+        :content="t('sideBar.currentDir.pinHint')"
+        placement="bottom-start"
+      >
+        <el-checkbox v-model="pinChecked">
+          {{ t('sideBar.currentDir.pin') }}
+        </el-checkbox>
+      </el-tooltip>
     </div>
-    <div v-if="error" class="status">
+    <div
+      v-if="!dirPath"
+      class="status"
+    >
+      {{ t('sideBar.currentDir.noDirectory') }}
+    </div>
+    <div
+      v-else-if="root && root.error && !root.loaded"
+      class="status"
+    >
       {{ t('sideBar.currentDir.readError') }}
-      <button class="button-primary" @click.stop="refresh">
+      <button
+        class="button-primary"
+        @click.stop="refresh"
+      >
         {{ t('sideBar.currentDir.retry') }}
       </button>
     </div>
-    <div v-else-if="!dirPath" class="status">
-      {{ t('sideBar.currentDir.noDirectory') }}
-    </div>
-    <div v-else-if="loading" class="status">
-      {{ t('sideBar.currentDir.loading') }}
-    </div>
-    <div v-else-if="files.length === 0" class="status">
-      {{ t('sideBar.currentDir.empty') }}
-    </div>
-    <div v-else class="file-list">
-      <div
-        v-for="file of files"
-        :key="file.pathname"
-        :title="file.pathname"
-        class="side-bar-file"
-        :class="{ current: currentFile?.pathname && isCurrent(file.pathname) }"
-        @click="handleFileClick(file)"
-      >
-        <file-icon :name="file.name" />
-        <span>{{ file.name }}</span>
-      </div>
+    <div
+      v-else
+      class="tree"
+    >
+      <current-dir-folder
+        v-if="root"
+        :folder="root"
+        :depth="0"
+        is-root
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { RefreshRight } from '@element-plus/icons-vue'
-import { useEditorStore } from '@/store/editor'
-import FileIcon from './icon.vue'
-
-interface DirFileEntry {
-  name: string
-  pathname: string
-}
+import { useCurrentDirStore } from '@/store/currentDir'
+import CurrentDirFolder from './currentDirFolder.vue'
 
 const { t } = useI18n()
-const editorStore = useEditorStore()
+const currentDirStore = useCurrentDirStore()
 
-const files = ref<DirFileEntry[]>([])
-const loading = ref(false)
-const error = ref(false)
+const { root, dirPath } = storeToRefs(currentDirStore)
 
-const { currentFile, tabs } = storeToRefs(editorStore)
+// The checkbox needs a writable v-model (el-checkbox is a controlled component:
+// a read-only :model-value + @change never flips its internal state). Mirror it
+// through a local ref so the store's SET_PINNED keeps owning the unpin
+// snap-back behaviour.
+const pinChecked = ref(currentDirStore.pinned)
 
-// Untitled tabs have an empty pathname; the panel stays in its
-// "no directory" state until the file is saved to disk.
-const dirPath = computed<string>(() => {
-  const pathname = currentFile.value?.pathname
-  return pathname ? window.path.dirname(pathname) : ''
+watch(pinChecked, (value) => {
+  if (value !== currentDirStore.pinned) currentDirStore.SET_PINNED(value)
 })
 
-const dirName = computed<string>(() => (dirPath.value ? window.path.basename(dirPath.value) : ''))
+watch(
+  () => currentDirStore.pinned,
+  (value) => {
+    if (pinChecked.value !== value) pinChecked.value = value
+  }
+)
+
+const loading = computed<boolean>(() => !!root.value?.loading)
 
 const dirLabel = computed<string>(() =>
   dirPath.value
@@ -77,52 +98,15 @@ const dirLabel = computed<string>(() =>
     : t('sideBar.currentDir.title')
 )
 
-const isCurrent = (pathname: string): boolean =>
-  !!currentFile.value && window.fileUtils.isSamePathSync(currentFile.value.pathname, pathname)
-
-const handleFileClick = (file: DirFileEntry): void => {
-  const openedTab = tabs.value.find((f) =>
-    window.fileUtils.isSamePathSync(f.pathname, file.pathname)
-  )
-  if (openedTab) {
-    if (isCurrent(file.pathname)) return
-    editorStore.UPDATE_CURRENT_FILE(openedTab)
-  } else {
-    window.electron.ipcRenderer.send('mt::open-file', file.pathname, {})
-  }
-}
-
-const load = async (dir: string): Promise<void> => {
-  loading.value = true
-  error.value = false
-  try {
-    const entries = await window.fileUtils.readdir(dir)
-    files.value = entries
-      .filter((name) => window.fileUtils.hasMarkdownExtension(name))
-      .map((name) => ({ name, pathname: window.path.join(dir, name) }))
-      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
-  } catch {
-    files.value = []
-    error.value = true
-  } finally {
-    loading.value = false
-  }
-}
-
 const refresh = (): void => {
-  if (dirPath.value) load(dirPath.value).catch(() => {})
+  currentDirStore.REFRESH().catch(() => {})
 }
 
-// Reload when the active tab moves to another directory; skip transient
-// empty pathnames during tab switches.
-watch(
-  dirPath,
-  (dir) => {
-    if (dir) load(dir).catch(() => {})
-    else files.value = []
-  },
-  { immediate: true }
-)
+// Point the tree at the active file's directory. Folder state, including which
+// folders are expanded and what they last listed, is kept by the store, so
+// revisiting a directory restores the shape instead of re-scanning it. While
+// pinned, FOLLOW_DIR is a no-op and only the refresh button re-reads the tree.
+watch(dirPath, (dir) => currentDirStore.FOLLOW_DIR(dir), { immediate: true })
 </script>
 
 <style scoped>
@@ -132,6 +116,11 @@ watch(
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
+  /* The title bar is position: fixed across the window top; clear it so the
+     panel title no longer sits underneath it (upstream panels use a 35px
+     placeholder for the same reason). */
+  padding-top: var(--titleBarHeight);
 }
 
 .side-bar-current-dir > .title {
@@ -167,14 +156,17 @@ watch(
   color: var(--highlightThemeColor);
 }
 
-.dir-header {
-  height: 28px;
-  line-height: 28px;
-  padding: 0 15px;
+.pin-bar {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 15px 0 25px;
   flex-shrink: 0;
-  color: var(--sideBarTextColor);
-  font-size: 13px;
   border-bottom: 1px solid var(--itemBgColor);
+  font-size: 12px;
+  :deep(.el-checkbox__label) {
+    font-size: 12px;
+  }
 }
 
 .status {
@@ -193,53 +185,13 @@ watch(
   margin-top: 10px;
 }
 
-.file-list {
+.tree {
   flex: 1;
   overflow: auto;
 }
 
-.file-list::-webkit-scrollbar:vertical {
+.tree::-webkit-scrollbar:vertical {
   width: 8px;
-}
-
-.side-bar-file {
-  display: flex;
-  position: relative;
-  align-items: center;
-  cursor: default;
-  user-select: none;
-  height: 30px;
-  box-sizing: border-box;
-  padding-left: 15px;
-  padding-right: 15px;
-  &:hover {
-    background: var(--sideBarItemHoverBgColor);
-  }
-  & > span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  &::before {
-    content: '';
-    position: absolute;
-    display: block;
-    left: 0;
-    background: var(--themeColor);
-    width: 2px;
-    height: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: all 0.2s ease;
-  }
-}
-
-.side-bar-file.current::before {
-  height: 100%;
-}
-
-.side-bar-file.current > span {
-  color: var(--themeColor);
 }
 
 .button-primary {

@@ -264,7 +264,9 @@
       "empty": "此目录下没有 Markdown 文件。",
       "noDirectory": "保存文件后即可查看其所在目录。",
       "readError": "读取目录失败。",
-      "retry": "重试"
+      "retry": "重试",
+      "pin": "固定目录",
+      "pinHint": "勾选后固定目录结构，切换文件时不再跳转"
     },
     "workspace": {
       "title": "工作区",
