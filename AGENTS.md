@@ -63,13 +63,15 @@ pnpm -C packages/muya test:spec     # CommonMark/GFM 规范基线
 
 ## Git 分支规则
 
+- **直接在主分支开发**：开发时直接在主分支提交，不要另建功能 / 修复分支；只有用户明确要求时才新建分支。
+
 | 分支               | 用途                                          | 谁可以写入                             |
 | ------------------ | --------------------------------------------- | -------------------------------------- |
 | `upstream/develop` | 跟踪上游 marktext/marktext（PR 合入 develop） | 只读（仅 fetch）                       |
 | `vendor/develop`   | 上游版本基线（上游 develop 线）               | 只读（仅 merge-upstream skill 可更新） |
 | `vendor/vX.Y.x`    | 上游版本线分支（锚定 tag 时用）               | 只读（同上）                           |
 | `custom/main`      | 自定义开发主分支                              | AI Agent 开发合并                      |
-| `feature/<name>`   | 功能开发分支                                  | AI Agent 临时分支                      |
+| `feature/<name>`   | 仅用户明确要求时临时使用                      | 用户明确授权                           |
 
 - **remote**：`origin` → https://github.com/zouv/custom-marktext；`upstream` → https://github.com/marktext/marktext
 - **禁止操作**：

@@ -24,6 +24,12 @@ Stub packages (`packages/facade`, `packages/findReplace`) from the upstream muya
 
 ---
 
+## Branch policy (hard rule)
+
+Develop and commit directly on the main branch; do not create feature or fix branches unless the user explicitly asks.
+
+---
+
 ## Commands
 
 Run from the marktext repo root.
